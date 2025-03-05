@@ -1,0 +1,14 @@
+.modal-header {
+  background-color: #6f42c1;
+  color: white;
+}
+
+.modal-footer .btn-secondary {
+  background-color: #6f42c1;
+  border-color: #6f42c1;
+}
+
+.modal-footer .btn-primary {
+  background-color: #6f42c1;
+  border-color: #6f42c1;
+}

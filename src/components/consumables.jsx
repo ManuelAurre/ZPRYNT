@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { Modal, Button } from 'react-bootstrap';
+import '../styles/Modal.css'; // Import the new CSS file
 
-const Consumables = () => {
+const Consumables = ({ showModal, handleClose }) => {
     const [consumableName, setConsumableName] = useState('');
     const [quantity, setQuantity] = useState('');
     const [purchaseCost, setPurchaseCost] = useState('');
@@ -32,16 +34,19 @@ const Consumables = () => {
             imagePreview,
         });
         // Aquí puedes agregar la lógica para manejar el envío del formulario
+        handleClose();
     };
 
     return (
-        <div className="container mt-5">
-            <h3>Registro de Consumibles</h3>
-            <form id="consumableForm" className="d-flex align-items-start" onSubmit={handleSubmit}>
-                <div className="image-container">
-                    <img src={imagePreview} alt="Imagen del Consumible" id="imagePreview" />
-                </div>
-                <div className="form-group flex-grow-1">
+        <Modal show={showModal} onHide={handleClose}>
+            <Modal.Header closeButton>
+                <Modal.Title>Registro de Consumibles</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                <form id="consumableForm" onSubmit={handleSubmit}>
+                    <div className="image-container mb-3">
+                        <img src={imagePreview} alt="Imagen del Consumible" id="imagePreview" className="img-fluid" />
+                    </div>
                     <div className="form-group">
                         <label htmlFor="consumableName">Nombre del Consumible</label>
                         <input
@@ -148,13 +153,17 @@ const Consumables = () => {
                             onChange={handleImageChange}
                         />
                     </div>
-                    <button type="submit" className="btn btn-primary">Registrar Consumible</button>
-                    <button type="button" className="btn btn-secondary" onClick={() => window.location.href = 'home.html'}>
-                        Volver a Inicio
-                    </button>
-                </div>
-            </form>
-        </div>
+                </form>
+            </Modal.Body>
+            <Modal.Footer>
+                <Button variant="secondary" onClick={handleClose}>
+                    Cerrar
+                </Button>
+                <Button variant="primary" onClick={handleSubmit}>
+                    Registrar Consumible
+                </Button>
+            </Modal.Footer>
+        </Modal>
     );
 };
 

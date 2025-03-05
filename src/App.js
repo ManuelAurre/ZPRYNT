@@ -22,6 +22,7 @@ function App() {
         <Route path="/quote-request" element={<QuoteRequest />} />
         <Route path="/quote-view" element={<QuoteView />} />
         <Route path="/quote-view-vendors" element={<QuoteViewVendors />} />
+        <Route path="/" element={<Login />} /> {/* Default route */}
       </Routes>
     </Router>
   );

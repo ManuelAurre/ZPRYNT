@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Modal, Button } from 'react-bootstrap';
+import '../styles/Modal.css'; // Import the new CSS file
 
 const Printer = ({ showModal, handleClose }) => {
     const [printerModel, setPrinterModel] = useState('');
