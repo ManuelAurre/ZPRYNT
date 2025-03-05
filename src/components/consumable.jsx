@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
-import { Modal, Button } from 'react-bootstrap';
 
-const ConsumablesDetails = ({ showModal, handleClose }) => {
+const Consumables = () => {
     const [consumableName, setConsumableName] = useState('');
     const [quantity, setQuantity] = useState('');
     const [purchaseCost, setPurchaseCost] = useState('');
     const [saleCost, setSaleCost] = useState('');
     const [consumableType, setConsumableType] = useState('');
     const [material, setMaterial] = useState('');
-    const [imagePreview, setImagePreview] = useState('./src/Img/ruta_de_la_imagen_de_consumible.jpg'); // Update the path to the image
+    const [imagePreview, setImagePreview] = useState('placeholder-image.jpg');
 
     const handleImageChange = (event) => {
         const file = event.target.files[0];
@@ -32,19 +31,17 @@ const ConsumablesDetails = ({ showModal, handleClose }) => {
             material,
             imagePreview,
         });
-        handleClose(); // Cierra el modal después de enviar
+        // Aquí puedes agregar la lógica para manejar el envío del formulario
     };
 
     return (
-        <Modal show={showModal} onHide={handleClose}>
-            <Modal.Header closeButton>
-                <Modal.Title>Detalles del Consumible</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-                <form id="consumableForm" onSubmit={handleSubmit}>
-                    <div className="image-container mb-3">
-                        <img src={imagePreview} alt="Imagen del Consumible" id="imagePreview" className="img-fluid" />
-                    </div>
+        <div className="container mt-5">
+            <h3>Registro de Consumibles</h3>
+            <form id="consumableForm" className="d-flex align-items-start" onSubmit={handleSubmit}>
+                <div className="image-container">
+                    <img src={imagePreview} alt="Imagen del Consumible" id="imagePreview" />
+                </div>
+                <div className="form-group flex-grow-1">
                     <div className="form-group">
                         <label htmlFor="consumableName">Nombre del Consumible</label>
                         <input
@@ -58,12 +55,12 @@ const ConsumablesDetails = ({ showModal, handleClose }) => {
                         />
                     </div>
                     <div className="form-group mt-3">
-                        <label htmlFor="quantity">Cantidad</label>
+                        <label htmlFor="consumableQuantity">Cantidad</label>
                         <input
                             type="number"
                             className="form-control"
-                            id="quantity"
-                            placeholder="Ingresa la cantidad"
+                            id="consumableQuantity"
+                            placeholder="Ingresa la cantidad disponible"
                             required
                             value={quantity}
                             onChange={(e) => setQuantity(e.target.value)}
@@ -97,15 +94,38 @@ const ConsumablesDetails = ({ showModal, handleClose }) => {
                     </div>
                     <div className="form-group mt-3">
                         <label htmlFor="consumableType">Tipo de Consumible</label>
-                        <input
-                            type="text"
-                            className="form-control"
-                            id="consumableType"
-                            placeholder="Ingresa el tipo de consumible"
-                            required
-                            value={consumableType}
-                            onChange={(e) => setConsumableType(e.target.value)}
-                        />
+                        <div id="consumableType">
+                            <div className="form-check">
+                                <input
+                                    className="form-check-input"
+                                    type="radio"
+                                    name="consumableType"
+                                    id="filament"
+                                    value="Filamento"
+                                    required
+                                    checked={consumableType === 'Filamento'}
+                                    onChange={(e) => setConsumableType(e.target.value)}
+                                />
+                                <label className="form-check-label" htmlFor="filament">
+                                    Filamento
+                                </label>
+                            </div>
+                            <div className="form-check">
+                                <input
+                                    className="form-check-input"
+                                    type="radio"
+                                    name="consumableType"
+                                    id="resinUV"
+                                    value="Resina UV"
+                                    required
+                                    checked={consumableType === 'Resina UV'}
+                                    onChange={(e) => setConsumableType(e.target.value)}
+                                />
+                                <label className="form-check-label" htmlFor="resinUV">
+                                    Resina UV
+                                </label>
+                            </div>
+                        </div>
                     </div>
                     <div className="form-group mt-3">
                         <label htmlFor="material">Material</label>
@@ -113,7 +133,7 @@ const ConsumablesDetails = ({ showModal, handleClose }) => {
                             type="text"
                             className="form-control"
                             id="material"
-                            placeholder="Ingresa el material"
+                            placeholder="Ingresa el material del consumible"
                             required
                             value={material}
                             onChange={(e) => setMaterial(e.target.value)}
@@ -128,18 +148,14 @@ const ConsumablesDetails = ({ showModal, handleClose }) => {
                             onChange={handleImageChange}
                         />
                     </div>
-                </form>
-            </Modal.Body>
-            <Modal.Footer>
-                <Button variant="secondary" onClick={handleClose}>
-                    Cerrar
-                </Button>
-                <Button variant="primary" onClick={handleSubmit}>
-                    Registrar Consumible
-                </Button>
-            </Modal.Footer>
-        </Modal>
+                    <button type="submit" className="btn btn-primary">Registrar Consumible</button>
+                    <button type="button" className="btn btn-secondary" onClick={() => window.location.href = 'home.html'}>
+                        Volver a Inicio
+                    </button>
+                </div>
+            </form>
+        </div>
     );
 };
 
-export default ConsumablesDetails;
+export default Consumables;

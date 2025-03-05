@@ -1,54 +1,26 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from 'react';
+
+
 
 const Login = () => {
-  const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  });
-
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await fetch('http://localhost:3000/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(formData)
-      });
-      if (response.ok) {
-        navigate('/home');
-      } else {
-        console.error('Invalid credentials');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-    }
-  };
-
   return (
     <div className="container mt-5">
       <h3>Inicio de Sesión</h3>
-      <form onSubmit={handleSubmit}>
+      <form>
         <div className="form-group">
           <label htmlFor="loginEmail">Correo Electrónico</label>
-          <input type="email" className="form-control" id="loginEmail" name="email" placeholder="Ingresa tu correo electrónico" required onChange={handleChange} />
+          <input type="email" className="form-control" id="loginEmail" placeholder="Ingresa tu correo electrónico" />
         </div>
         <div className="form-group">
           <label htmlFor="loginPassword">Contraseña</label>
-          <input type="password" className="form-control" id="loginPassword" name="password" placeholder="Ingresa tu contraseña" required onChange={handleChange} />
+          <input type="password" className="form-control" id="loginPassword" placeholder="Ingresa tu contraseña" />
         </div>
-        <button type="submit" className="btn btn-primary">Iniciar Sesión</button>
-        <button type="button" className="btn btn-link" onClick={() => navigate('/register')}>Registrarte</button>
+        <button type="button" className="btn btn-primary" onClick={() => window.location.href='/home'}>
+          Iniciar Sesión
+        </button>
+        <button type="button" className="btn btn-link" onClick={() => window.location.href='/register'}>
+          Registrarte
+        </button>
       </form>
     </div>
   );

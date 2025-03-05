@@ -5,7 +5,7 @@ import Printer from './Printer';
 import ConsumableDetails from './consumables-details';
 import Consumable from './consumables';
 import QuoteRequest from './QuoteRequest';
-import QuoteView from './QuoteView';
+import QuoteView from './QuoteView'; 
 import QuoteViewVendors from './QuoteViewVendors';
 
 const Home = () => {
@@ -151,13 +151,13 @@ const Home = () => {
       </div>
 
       {/* Modales */}
-      <PrinterDetails showModal={showPrinterDetails} handleClose={handleClosePrinterDetails} />
-      <Printer showModal={showPrinterModal} handleClose={handleClosePrinterModal} /> 
-      <ConsumableDetails showModal={showConsumableDetails} handleClose={handleCloseConsumableDetails} />
-      <Consumable showModal={showConsumableModal} handleClose={handleCloseConsumableModal} /> 
-      <QuoteRequest showModal={showQuoteRequest} handleClose={handleCloseQuoteRequest} />
-      <QuoteView showModal={showQuoteView} handleClose={handleCloseQuoteView} />
-      <QuoteViewVendors showModal={showQuoteViewVendors} handleClose={handleCloseQuoteViewVendors} />
+      <PrinterDetails show={showPrinterDetails} handleClose={handleClosePrinterDetails} />
+      <Printer show={showPrinterModal} handleClose={handleClosePrinterModal} /> 
+      <ConsumableDetails show={showConsumableDetails} handleClose={handleCloseConsumableDetails} />
+      <Consumable show={showConsumableModal} handleClose={handleCloseConsumableModal} /> 
+      <QuoteRequest show={showQuoteRequest} handleClose={handleCloseQuoteRequest} />
+      <QuoteView show={showQuoteView} handleClose={handleCloseQuoteView} />
+      <QuoteViewVendors show={showQuoteViewVendors} handleClose={handleCloseQuoteViewVendors} />
     </div>
   );
 };

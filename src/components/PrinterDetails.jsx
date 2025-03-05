@@ -11,7 +11,7 @@ const PrinterDetails = ({ showModal, handleClose }) => {
         <div className="row">
           <div className="col-md-6">
             <img
-              src="./Img/ruta_de_la_imagen_de_impresora.jpg" // Update the path to the image
+              src="/Img/ruta_de_la_imagen_de_impresora.jpg"
               alt="Imagen de Impresora"
               className="img-fluid"
             />

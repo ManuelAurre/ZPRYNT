@@ -17,7 +17,7 @@ const QuoteView = () => {
                 <div className="row">
                     <div className="col-md-6">
                         <img 
-                            src="./src/components/Img/ruta_de_la_imagen_de_cotizacion.jpg" 
+                            src="/Img/ruta_de_la_imagen_de_cotizacion.jpg" 
                             alt="Imagen de Cotización" 
                             className="img-fluid" 
                         />
