@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import '../styles/Register.css'; // Import the new CSS file
 
 function Register() {
   const navigate = useNavigate();
@@ -21,7 +22,7 @@ function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:3000/register', {
+      const response = await fetch('http://localhost:4000/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -43,7 +44,7 @@ function Register() {
   };
 
   return (
-    <div className="container mt-5">
+    <div className="register-container">
       <h3>Registro de Usuarios</h3>
       <form id="registerForm" onSubmit={handleSubmit}>
         <div className="form-group">
@@ -66,8 +67,10 @@ function Register() {
           <label htmlFor="registerEdad">Edad</label>
           <input type="number" className="form-control" id="registerEdad" name="edad" placeholder="Ingresa tu edad" required onChange={handleChange} />
         </div>
-        <button type="submit" className="btn btn-primary">Registrarse</button>
-        <button type="button" className="btn btn-secondary" onClick={handleCancel}>Cancelar</button>
+        <div className="button-group">
+          <button type="submit" className="btn btn-primary">Registrarse</button>
+          <button type="button" className="btn btn-secondary" onClick={handleCancel}>Cancelar</button>
+        </div>
       </form>
     </div>
   );

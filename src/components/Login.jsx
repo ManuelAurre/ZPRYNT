@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import '../styles/Login.css'; // Update the import path
 
 const Login = () => {
   const navigate = useNavigate();
@@ -18,7 +19,7 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:3000/login', {
+      const response = await fetch('http://localhost:4000/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -36,7 +37,7 @@ const Login = () => {
   };
 
   return (
-    <div className="container mt-5">
+    <div className="login-container">
       <h3>Inicio de Sesión</h3>
       <form onSubmit={handleSubmit}>
         <div className="form-group">
