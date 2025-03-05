@@ -5,7 +5,7 @@ const QuoteRequest = () => {
     const [showModal, setShowModal] = useState(false); // Estado para manejar el modal
 
     const handleBackClick = () => {
-        window.location.href = 'home.html'; // Cambia esto por la ruta de React que desees
+        window.location.href = './src/components/home.jsx'; // Cambia esto por la ruta de React que desees
     };
 
     const handleSubmit = (event) => {

@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
+import { Modal, Button } from 'react-bootstrap';
 
-const Consumables = () => {
+const ConsumablesDetails = ({ showModal, handleClose }) => {
     const [consumableName, setConsumableName] = useState('');
     const [quantity, setQuantity] = useState('');
     const [purchaseCost, setPurchaseCost] = useState('');
     const [saleCost, setSaleCost] = useState('');
     const [consumableType, setConsumableType] = useState('');
     const [material, setMaterial] = useState('');
-    const [imagePreview, setImagePreview] = useState('placeholder-image.jpg');
+    const [imagePreview, setImagePreview] = useState('./src/Img/ruta_de_la_imagen_de_consumible.jpg'); // Update the path to the image
 
     const handleImageChange = (event) => {
         const file = event.target.files[0];
@@ -31,17 +32,19 @@ const Consumables = () => {
             material,
             imagePreview,
         });
-        // Aquí puedes agregar la lógica para manejar el envío del formulario
+        handleClose(); // Cierra el modal después de enviar
     };
 
     return (
-        <div className="container mt-5">
-            <h3>Registro de Consumibles</h3>
-            <form id="consumableForm" className="d-flex align-items-start" onSubmit={handleSubmit}>
-                <div className="image-container">
-                    <img src={imagePreview} alt="Imagen del Consumible" id="imagePreview" />
-                </div>
-                <div className="form-group flex-grow-1">
+        <Modal show={showModal} onHide={handleClose}>
+            <Modal.Header closeButton>
+                <Modal.Title>Detalles del Consumible</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                <form id="consumableForm" onSubmit={handleSubmit}>
+                    <div className="image-container mb-3">
+                        <img src={imagePreview} alt="Imagen del Consumible" id="imagePreview" className="img-fluid" />
+                    </div>
                     <div className="form-group">
                         <label htmlFor="consumableName">Nombre del Consumible</label>
                         <input
@@ -55,12 +58,12 @@ const Consumables = () => {
                         />
                     </div>
                     <div className="form-group mt-3">
-                        <label htmlFor="consumableQuantity">Cantidad</label>
+                        <label htmlFor="quantity">Cantidad</label>
                         <input
                             type="number"
                             className="form-control"
-                            id="consumableQuantity"
-                            placeholder="Ingresa la cantidad disponible"
+                            id="quantity"
+                            placeholder="Ingresa la cantidad"
                             required
                             value={quantity}
                             onChange={(e) => setQuantity(e.target.value)}
@@ -94,38 +97,15 @@ const Consumables = () => {
                     </div>
                     <div className="form-group mt-3">
                         <label htmlFor="consumableType">Tipo de Consumible</label>
-                        <div id="consumableType">
-                            <div className="form-check">
-                                <input
-                                    className="form-check-input"
-                                    type="radio"
-                                    name="consumableType"
-                                    id="filament"
-                                    value="Filamento"
-                                    required
-                                    checked={consumableType === 'Filamento'}
-                                    onChange={(e) => setConsumableType(e.target.value)}
-                                />
-                                <label className="form-check-label" htmlFor="filament">
-                                    Filamento
-                                </label>
-                            </div>
-                            <div className="form-check">
-                                <input
-                                    className="form-check-input"
-                                    type="radio"
-                                    name="consumableType"
-                                    id="resinUV"
-                                    value="Resina UV"
-                                    required
-                                    checked={consumableType === 'Resina UV'}
-                                    onChange={(e) => setConsumableType(e.target.value)}
-                                />
-                                <label className="form-check-label" htmlFor="resinUV">
-                                    Resina UV
-                                </label>
-                            </div>
-                        </div>
+                        <input
+                            type="text"
+                            className="form-control"
+                            id="consumableType"
+                            placeholder="Ingresa el tipo de consumible"
+                            required
+                            value={consumableType}
+                            onChange={(e) => setConsumableType(e.target.value)}
+                        />
                     </div>
                     <div className="form-group mt-3">
                         <label htmlFor="material">Material</label>
@@ -133,7 +113,7 @@ const Consumables = () => {
                             type="text"
                             className="form-control"
                             id="material"
-                            placeholder="Ingresa el material del consumible"
+                            placeholder="Ingresa el material"
                             required
                             value={material}
                             onChange={(e) => setMaterial(e.target.value)}
@@ -148,14 +128,18 @@ const Consumables = () => {
                             onChange={handleImageChange}
                         />
                     </div>
-                    <button type="submit" className="btn btn-primary">Registrar Consumible</button>
-                    <button type="button" className="btn btn-secondary" onClick={() => window.location.href = 'home.html'}>
-                        Volver a Inicio
-                    </button>
-                </div>
-            </form>
-        </div>
+                </form>
+            </Modal.Body>
+            <Modal.Footer>
+                <Button variant="secondary" onClick={handleClose}>
+                    Cerrar
+                </Button>
+                <Button variant="primary" onClick={handleSubmit}>
+                    Registrar Consumible
+                </Button>
+            </Modal.Footer>
+        </Modal>
     );
 };
 
-export default Consumables;
+export default ConsumablesDetails;
