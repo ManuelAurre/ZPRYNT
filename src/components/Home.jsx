@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios'; // Importar axios para realizar solicitudes HTTP
 import PrinterDetails from './PrinterDetails';
 import Printer from './Printer';
 import ConsumableDetails from './consumables-details';
@@ -7,6 +8,7 @@ import Consumable from './consumables';
 import QuoteRequest from './QuoteRequest';
 import QuoteView from './QuoteView';
 import QuoteViewVendors from './QuoteViewVendors';
+import CalculadoraModal from './CalculadoraModal';
 import '../styles/Home.css'; // Import the new CSS file
 
 const Home = () => {
@@ -18,7 +20,44 @@ const Home = () => {
   const [showQuoteViewVendors, setShowQuoteViewVendors] = useState(false);
   const [showPrinterModal, setShowPrinterModal] = useState(false); // Modal para agregar impresora
   const [showConsumableModal, setShowConsumableModal] = useState(false); // Modal para agregar consumible
+  const [showCalculadoraEdit, setShowCalculadoraEdit] = useState(false); // Modal para editar calculadora
+  const [showCalculadoraAdd, setShowCalculadoraAdd] = useState(false); // Modal para agregar calculadora
   const [activeTab, setActiveTab] = useState('printer'); // Estado para la pestaña activa
+  const [printers, setPrinters] = useState([]); // Estado para almacenar las impresoras
+  const [newPrinterName, setNewPrinterName] = useState(''); // Estado para el nombre de la nueva impresora
+
+  useEffect(() => {
+    // Obtener impresoras desde la base de datos al cargar el componente
+    const fetchPrinters = async () => {
+      try {
+        const response = await axios.get('/api/printers');
+        setPrinters(response.data);
+      } catch (error) {
+        console.error('Error al obtener las impresoras:', error);
+      }
+    };
+    fetchPrinters();
+  }, []);
+
+  const handleAddPrinter = async () => {
+    if (!newPrinterName) return;
+    try {
+      const response = await axios.post('/api/printers', { name: newPrinterName });
+      setPrinters([...printers, response.data]); // Actualizar la lista de impresoras
+      setNewPrinterName(''); // Limpiar el campo de entrada
+    } catch (error) {
+      console.error('Error al agregar la impresora:', error);
+    }
+  };
+
+  const handleEditPrinter = async (id, newName) => {
+    try {
+      const response = await axios.put(`/api/printers/${id}`, { name: newName });
+      setPrinters(printers.map(printer => (printer.id === id ? response.data : printer)));
+    } catch (error) {
+      console.error('Error al editar la impresora:', error);
+    }
+  };
 
   const handleShowPrinterDetails = () => setShowPrinterDetails(true);
   const handleClosePrinterDetails = () => setShowPrinterDetails(false);
@@ -41,6 +80,12 @@ const Home = () => {
   const handleShowConsumableModal = () => setShowConsumableModal(true); // Mostrar modal de agregar consumible
   const handleCloseConsumableModal = () => setShowConsumableModal(false); // Cerrar modal de agregar consumible
 
+  const handleShowCalculadoraEdit = () => setShowCalculadoraEdit(true);
+  const handleCloseCalculadoraEdit = () => setShowCalculadoraEdit(false);
+
+  const handleShowCalculadoraAdd = () => setShowCalculadoraAdd(true);
+  const handleCloseCalculadoraAdd = () => setShowCalculadoraAdd(false);
+
   const renderContent = () => {
     switch (activeTab) {
       case 'printer':
@@ -51,14 +96,29 @@ const Home = () => {
               <div className="form-group">
                 <label htmlFor="printerSelect">Selecciona una Impresora</label>
                 <select className="form-control" id="printerSelect">
-                  <option>Impresora 1</option>
-                  <option>Impresora 2</option>
-                  <option>Impresora 3</option>
+                  {printers.map(printer => (
+                    <option key={printer.id} value={printer.id}>
+                      {printer.name}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div className="d-flex justify-content-between mt-2">
                 <button type="button" className="btn btn-primary" onClick={handleShowPrinterDetails}>Ver</button>
                 <button type="button" className="btn btn-success" onClick={handleShowPrinterModal}>Agregar</button>
+              </div>
+              <div className="form-group mt-3">
+                <label htmlFor="newPrinterName">Nueva Impresora</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  id="newPrinterName"
+                  value={newPrinterName}
+                  onChange={(e) => setNewPrinterName(e.target.value)}
+                />
+                <button type="button" className="btn btn-success mt-2" onClick={handleAddPrinter}>
+                  Agregar Impresora
+                </button>
               </div>
               <h3 className="mt-4">Registro de Consumible</h3>
               <div className="form-group mt-3">
@@ -119,19 +179,22 @@ const Home = () => {
       case 'posts':
         return (
           <div>
-            <h3 className="mt-4">Publicaciones</h3>
-            <form>
-              <div className="form-group">
-                <label htmlFor="imageUpload">Cargar Foto</label>
-                <input type="file" className="form-control" id="imageUpload" />
-              </div>
-              <div className="form-group mt-3">
-                <label htmlFor="postText">Texto de la Publicación</label>
-                <textarea className="form-control" id="postText" rows="4" placeholder="Escribe el texto aquí"></textarea>
-              </div>
-              <button type="submit" className="btn btn-primary mt-3">Publicar</button>
-            </form>
-          </div>
+          <h3 className="mt-4">Configuración</h3>
+          <form>
+            <div className="form-group">
+             
+              <select className="form-control" id="quoteSelectClients">
+                <option>Cotización 1</option>
+                <option>Cotización 2</option>
+                <option>Cotización 3</option>
+              </select>
+            </div>
+            <div className="d-flex justify-content-between mt-2">
+              <button type="button" className="btn btn-primary" onClick={handleShowCalculadoraEdit}>Editar</button>
+              <button type="button" className="btn btn-success" onClick={handleShowCalculadoraAdd}>Agregar</button>
+            </div>
+          </form>
+        </div>
         );
       default:
         return null;
@@ -148,41 +211,4 @@ const Home = () => {
       </div>
       <ul className="nav nav-tabs" id="myTab" role="tablist">
         <li className="nav-item">
-          <a className={`nav-link ${activeTab === 'printer' ? 'active' : ''}`} id="printer-tab" data-bs-toggle="tab" href="#printer" role="tab" aria-controls="printer" aria-selected={activeTab === 'printer'} onClick={() => setActiveTab('printer')}>
-            Registro de Impresoras y Consumible
-          </a>
-        </li>
-        <li className="nav-item">
-          <a className={`nav-link ${activeTab === 'quote-clients' ? 'active' : ''}`} id="quote-clients-tab" data-bs-toggle="tab" href="#quote-clients" role="tab" aria-controls="quote-clients" aria-selected={activeTab === 'quote-clients'} onClick={() => setActiveTab('quote-clients')}>
-            Cotizaciones Clientes
-          </a>
-        </li>
-        <li className="nav-item">
-          <a className={`nav-link ${activeTab === 'quote-vendors' ? 'active' : ''}`} id="quote-vendors-tab" data-bs-toggle="tab" href="#quote-vendors" role="tab" aria-controls="quote-vendors" aria-selected={activeTab === 'quote-vendors'} onClick={() => setActiveTab('quote-vendors')}>
-            Cotizaciones Vendedores
-          </a>
-        </li>
-        <li className="nav-item">
-          <a className={`nav-link ${activeTab === 'posts' ? 'active' : ''}`} id="posts-tab" data-bs-toggle="tab" href="#posts" role="tab" aria-controls="posts" aria-selected={activeTab === 'posts'} onClick={() => setActiveTab('posts')}>
-            Publicaciones
-          </a>
-        </li>
-      </ul>
-
-      <div className="tab-content" id="myTabContent">
-        {renderContent()}
-      </div>
-
-      {/* Modales */}
-      {showPrinterDetails && <PrinterDetails showModal={showPrinterDetails} handleClose={handleClosePrinterDetails} />}
-      {showPrinterModal && <Printer showModal={showPrinterModal} handleClose={handleClosePrinterModal} />}
-      {showConsumableDetails && <ConsumableDetails showModal={showConsumableDetails} handleClose={handleCloseConsumableDetails} />}
-      {showConsumableModal && <Consumable showModal={showConsumableModal} handleClose={handleCloseConsumableModal} />}
-      {showQuoteRequest && <QuoteRequest showModal={showQuoteRequest} handleClose={handleCloseQuoteRequest} />}
-      {showQuoteView && <QuoteView showModal={showQuoteView} handleClose={handleCloseQuoteView} />}
-      {showQuoteViewVendors && <QuoteViewVendors showModal={showQuoteViewVendors} handleClose={handleCloseQuoteViewVendors} />}
-    </div>
-  );
-};
-
 export default Home;
