@@ -7,6 +7,7 @@ import Consumable from './consumables';
 import QuoteRequest from './QuoteRequest';
 import QuoteView from './QuoteView';
 import QuoteViewVendors from './QuoteViewVendors';
+import CalculadoraModal from './CalculadoraModal'; // Importamos el componente CalculadoraModal
 import '../styles/Home.css'; // Import the new CSS file
 
 const Home = () => {
@@ -19,6 +20,8 @@ const Home = () => {
   const [showPrinterModal, setShowPrinterModal] = useState(false); // Modal para agregar impresora
   const [showConsumableModal, setShowConsumableModal] = useState(false); // Modal para agregar consumible
   const [activeTab, setActiveTab] = useState('printer'); // Estado para la pestaña activa
+  const [showCalculadoraAdd, setShowCalculadoraAdd] = useState(false); // Estado para agregar calculadora
+  const [showCalculadoraEdit, setShowCalculadoraEdit] = useState(false); // Estado para editar calculadora
 
   const handleShowPrinterDetails = () => setShowPrinterDetails(true);
   const handleClosePrinterDetails = () => setShowPrinterDetails(false);
@@ -40,6 +43,12 @@ const Home = () => {
 
   const handleShowConsumableModal = () => setShowConsumableModal(true); // Mostrar modal de agregar consumible
   const handleCloseConsumableModal = () => setShowConsumableModal(false); // Cerrar modal de agregar consumible
+
+  const handleShowCalculadoraAdd = () => setShowCalculadoraAdd(true); // Mostrar agregar calculadora
+  const handleCloseCalculadoraAdd = () => setShowCalculadoraAdd(false); // Cerrar agregar calculadora
+
+  const handleShowCalculadoraEdit = () => setShowCalculadoraEdit(true); // Mostrar editar calculadora
+  const handleCloseCalculadoraEdit = () => setShowCalculadoraEdit(false); // Cerrar editar calculadora
 
   const renderContent = () => {
     switch (activeTab) {
@@ -116,20 +125,28 @@ const Home = () => {
             </form>
           </div>
         );
-      case 'posts':
+      case 'calculator':
         return (
           <div>
-            <h3 className="mt-4">Publicaciones</h3>
+            <h3 className="mt-4">Calculadora</h3>
             <form>
               <div className="form-group">
-                <label htmlFor="imageUpload">Cargar Foto</label>
-                <input type="file" className="form-control" id="imageUpload" />
+                <label htmlFor="calculatorSelect">Selecciona una Calculadora</label>
+                <select className="form-control" id="calculatorSelect">
+                  {/* Aquí se llenará dinámicamente con datos de la base de datos */}
+                  <option>Calculadora 1</option>
+                  <option>Calculadora 2</option>
+                  <option>Calculadora 3</option>
+                </select>
               </div>
-              <div className="form-group mt-3">
-                <label htmlFor="postText">Texto de la Publicación</label>
-                <textarea className="form-control" id="postText" rows="4" placeholder="Escribe el texto aquí"></textarea>
+              <div className="d-flex justify-content-between mt-2">
+                <button type="button" className="btn btn-secondary" onClick={handleShowCalculadoraEdit}>
+                  Editar
+                </button>
+                <button type="button" className="btn btn-success" onClick={handleShowCalculadoraAdd}>
+                  Agregar
+                </button>
               </div>
-              <button type="submit" className="btn btn-primary mt-3">Publicar</button>
             </form>
           </div>
         );
@@ -163,8 +180,8 @@ const Home = () => {
           </a>
         </li>
         <li className="nav-item">
-          <a className={`nav-link ${activeTab === 'posts' ? 'active' : ''}`} id="posts-tab" data-bs-toggle="tab" href="#posts" role="tab" aria-controls="posts" aria-selected={activeTab === 'posts'} onClick={() => setActiveTab('posts')}>
-            Publicaciones
+          <a className={`nav-link ${activeTab === 'calculator' ? 'active' : ''}`} id="calculator-tab" data-bs-toggle="tab" href="#calculator" role="tab" aria-controls="calculator" aria-selected={activeTab === 'calculator'} onClick={() => setActiveTab('calculator')}>
+            Calculadora
           </a>
         </li>
       </ul>
@@ -181,6 +198,20 @@ const Home = () => {
       {showQuoteRequest && <QuoteRequest showModal={showQuoteRequest} handleClose={handleCloseQuoteRequest} />}
       {showQuoteView && <QuoteView showModal={showQuoteView} handleClose={handleCloseQuoteView} />}
       {showQuoteViewVendors && <QuoteViewVendors showModal={showQuoteViewVendors} handleClose={handleCloseQuoteViewVendors} />}
+      {showCalculadoraAdd && (
+        <CalculadoraModal
+          showModal={showCalculadoraAdd}
+          handleClose={handleCloseCalculadoraAdd}
+          mode="add"
+        />
+      )}
+      {showCalculadoraEdit && (
+        <CalculadoraModal
+          showModal={showCalculadoraEdit}
+          handleClose={handleCloseCalculadoraEdit}
+          mode="edit"
+        />
+      )}
     </div>
   );
 };
