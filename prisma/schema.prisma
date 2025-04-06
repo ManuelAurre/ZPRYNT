@@ -3,7 +3,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -18,29 +17,45 @@ model User {
 }
 
 model Impresora {
-  id     Int    @id @default(autoincrement())
-  nombre String
-  tipo   String
-  imagen String
-  tamanoX Float
-  tamanoY Float
-  tamanoZ Float
+  id         Int     @id @default(autoincrement())
+  nombre     String
+  tipo       String
+  imagen     String
+  velocidad  Float
 }
 
 model Cotizacion {
-  id          Int     @id @default(autoincrement())
-  nombre      String
-  link        String
-  presupuesto Float
-  tipo        String
-  tamano      String
-  estatus     String
+  id                        Int     @id @default(autoincrement())
+  nombre                    String
+  link                      String
+  presupuesto               Float
+  tipo                      String
+  tamano                    String
+  estatus                   String
+  idConfiguracionCalculadora Int
+  diseno                    String
+  postprocesado             String
+  marketingEntrega          String
+  comentarios               String
+
 }
 
 model Utilizables {
-  id       Int    @id @default(autoincrement())
-  nombre   String
-  cantidad Int
-  tipo     String
-  estado    String
+  id              Int     @id @default(autoincrement())
+  nombre          String
+  cantidad        Float
+  cantidadActual  Float
+  tipo            String
+  costoDeCompra   String
+}
+
+model ConfiguracionCalculadora {
+  id                   Int     @id @default(autoincrement())
+  utilizablesId        Int
+  impresoraId          Int
+  costoPorTiempo       Float
+  costoDiseno          Float
+  costoPostprocesado   Float
+  costoMarketingEntrega Float
+  empleadoId           Int
 }
