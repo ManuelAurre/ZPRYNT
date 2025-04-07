@@ -143,6 +143,20 @@ app.put('/api/calculadoras/:id', async (req, res) => {
   }
 });
 
+// Ruta para eliminar una configuración de calculadora
+app.delete('/api/calculadoras/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const configuracion = await prisma.configuracionCalculadora.delete({
+      where: { id: parseInt(id, 10) },
+    });
+    res.json({ message: 'Configuración de calculadora eliminada exitosamente.', configuracion });
+  } catch (error) {
+    console.error('Error al eliminar la configuración de calculadora:', error);
+    res.status(500).json({ error: 'Error al eliminar la configuración de calculadora.' });
+  }
+});
+
 // Ruta para registrar una nueva impresora
 app.post('/api/impresoras', async (req, res) => {
   console.log('Solicitud recibida en /api/impresoras:', req.body);
@@ -206,6 +220,20 @@ app.get('/api/impresoras', async (req, res) => {
   } catch (error) {
     console.error('Error al obtener las impresoras:', error);
     res.status(500).json({ error: 'Error al obtener las impresoras' });
+  }
+});
+
+// Ruta para eliminar una impresora
+app.delete('/api/impresoras/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const impresora = await prisma.impresora.delete({
+      where: { id: parseInt(id, 10) },
+    });
+    res.json({ message: 'Impresora eliminada exitosamente.', impresora });
+  } catch (error) {
+    console.error('Error al eliminar la impresora:', error);
+    res.status(500).json({ error: 'Error al eliminar la impresora.' });
   }
 });
 
@@ -279,6 +307,20 @@ app.get('/api/utilizables', async (req, res) => {
   } catch (error) {
     console.error('Error al obtener los consumibles:', error);
     res.status(500).json({ error: 'Error al obtener los consumibles' });
+  }
+});
+
+// Ruta para eliminar un consumible
+app.delete('/api/utilizables/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const consumible = await prisma.utilizables.delete({
+      where: { id: parseInt(id, 10) },
+    });
+    res.json({ message: 'Consumible eliminado exitosamente.', consumible });
+  } catch (error) {
+    console.error('Error al eliminar el consumible:', error);
+    res.status(500).json({ error: 'Error al eliminar el consumible.' });
   }
 });
 
@@ -362,6 +404,20 @@ app.put('/api/cotizaciones/:id', async (req, res) => {
   } catch (error) {
     console.error('Error al actualizar la cotización:', error);
     res.status(500).json({ error: 'Error al actualizar la cotización' });
+  }
+});
+
+// Ruta para eliminar una cotización
+app.delete('/api/cotizaciones/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const cotizacion = await prisma.cotizacion.delete({
+      where: { id: parseInt(id, 10) },
+    });
+    res.json({ message: 'Cotización eliminada exitosamente.', cotizacion });
+  } catch (error) {
+    console.error('Error al eliminar la cotización:', error);
+    res.status(500).json({ error: 'Error al eliminar la cotización.' });
   }
 });
 

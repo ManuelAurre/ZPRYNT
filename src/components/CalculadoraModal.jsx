@@ -104,6 +104,27 @@ const CalculadoraModal = ({ showModal, handleClose, mode, calculatorData }) => {
     }
   };
 
+  const handleDelete = async () => {
+    const confirmDelete = window.confirm('¿Estás seguro de que deseas eliminar esta configuración?');
+    if (!confirmDelete) return;
+
+    try {
+      const response = await fetch(`/api/calculadoras/${calculatorData.id}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        alert('Configuración eliminada exitosamente');
+        handleClose();
+      } else {
+        const errorData = await response.json();
+        alert(`Error al eliminar la configuración: ${errorData.error || 'Error desconocido'}`);
+      }
+    } catch (error) {
+      alert('Error al eliminar la configuración. Verifica la conexión al servidor.');
+    }
+  };
+
   return (
     <Modal show={showModal} onHide={handleClose}>
       <Modal.Header closeButton>
@@ -202,12 +223,31 @@ const CalculadoraModal = ({ showModal, handleClose, mode, calculatorData }) => {
         </form>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={handleClose}>
-          Cerrar
-        </Button>
-        <Button variant="primary" onClick={handleSubmit}>
-          {mode === 'add' ? 'Agregar Configuración' : 'Guardar Cambios'}
-        </Button>
+        {mode === 'edit' && (
+          <div className="d-flex justify-content-between w-100">
+            <Button variant="danger" onClick={handleDelete}>
+              Borrar
+            </Button>
+            <div>
+              <Button variant="secondary" onClick={handleClose} className="me-2">
+                Cancelar
+              </Button>
+              <Button variant="primary" onClick={handleSubmit}>
+                Aceptar
+              </Button>
+            </div>
+          </div>
+        )}
+        {mode === 'add' && (
+          <div className="d-flex justify-content-end">
+            <Button variant="secondary" onClick={handleClose} className="me-2">
+              Cancelar
+            </Button>
+            <Button variant="primary" onClick={handleSubmit}>
+              Agregar Configuración
+            </Button>
+          </div>
+        )}
       </Modal.Footer>
     </Modal>
   );

@@ -203,7 +203,11 @@ const Home = () => {
     setSelectedConsumableId(event.target.value); // Actualizar el ID del consumible seleccionado
   };
 
-  const handleShowQuoteRequest = () => setShowQuoteRequest(true);
+  const handleShowQuoteRequest = () => {
+    setSelectedQuoteDetails(null); // Asegurarse de que no haya datos de cotización seleccionados
+    setShowQuoteRequest(true); // Mostrar el modal de agregar cotización
+  };
+
   const handleCloseQuoteRequest = () => setShowQuoteRequest(false);
 
   const handleShowPrinterModal = () => setShowPrinterModal(true); // Mostrar modal de agregar impresora
@@ -361,7 +365,7 @@ const Home = () => {
                 </select>
               </div>
               <div className="d-flex justify-content-between mt-2">
-                <button type="button" className="btn btn-secondary" onClick={handleShowCalculadoraEdit}>
+                <button type="button" className="btn btn-primary" onClick={handleShowCalculadoraEdit}>
                   Editar
                 </button>
                 <button type="button" className="btn btn-success" onClick={handleShowCalculadoraAdd}>
@@ -423,7 +427,7 @@ const Home = () => {
         />
       )}
       {showConsumableModal && <Consumable showModal={showConsumableModal} handleClose={handleCloseConsumableModal} />}
-      {showQuoteRequest && (
+      {showQuoteRequest && !selectedQuoteDetails && (
         <QuoteRequest
           showModal={showQuoteRequest}
           handleClose={handleCloseQuoteRequest}

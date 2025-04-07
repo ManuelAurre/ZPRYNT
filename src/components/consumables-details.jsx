@@ -41,7 +41,7 @@ const ConsumablesDetails = ({ showModal, handleClose, selectedConsumableId }) =>
     };
 
     fetchConsumableDetails();
-  }, [selectedConsumableId, showModal]); // Ejecutar cuando cambia el ID seleccionado o se abre el modal
+  }, [selectedConsumableId, showModal]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -49,6 +49,49 @@ const ConsumablesDetails = ({ showModal, handleClose, selectedConsumableId }) =>
       ...prevData,
       [name]: value,
     }));
+  };
+
+  const handleSave = async () => {
+    try {
+      const response = await fetch(`http://localhost:4000/api/utilizables/${selectedConsumableId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(consumableData),
+      });
+
+      if (response.ok) {
+        alert('Consumible actualizado exitosamente');
+        handleClose();
+      } else {
+        const errorData = await response.json();
+        alert(`Error al actualizar el consumible: ${errorData.error || 'Error desconocido'}`);
+      }
+    } catch (error) {
+      alert('Error al actualizar el consumible. Verifica la conexión al servidor.');
+    }
+  };
+
+  const handleDelete = async () => {
+    const confirmDelete = window.confirm('¿Estás seguro de que deseas eliminar este consumible?');
+    if (!confirmDelete) return;
+
+    try {
+      const response = await fetch(`http://localhost:4000/api/utilizables/${selectedConsumableId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        alert('Consumible eliminado exitosamente');
+        handleClose();
+      } else {
+        const errorData = await response.json();
+        alert(`Error al eliminar el consumible: ${errorData.error || 'Error desconocido'}`);
+      }
+    } catch (error) {
+      alert('Error al eliminar el consumible. Verifica la conexión al servidor.');
+    }
   };
 
   return (
@@ -122,9 +165,19 @@ const ConsumablesDetails = ({ showModal, handleClose, selectedConsumableId }) =>
         )}
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={handleClose}>
-          Cerrar
-        </Button>
+        <div className="d-flex justify-content-between w-100">
+          <Button variant="danger" onClick={handleDelete}>
+            Borrar
+          </Button>
+          <div>
+            <Button variant="secondary" onClick={handleClose} className="me-2">
+              Cancelar
+            </Button>
+            <Button variant="primary" onClick={handleSave}>
+              Aceptar
+            </Button>
+          </div>
+        </div>
       </Modal.Footer>
     </Modal>
   );

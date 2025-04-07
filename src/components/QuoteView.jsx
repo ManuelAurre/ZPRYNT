@@ -62,7 +62,7 @@ const QuoteView = ({ showModal, handleClose, mode, quoteData }) => {
     }));
   };
 
-  const handleSubmit = async () => {
+  const handleSave = async () => {
     const payload = {
       nombre: formData.nombre,
       link: formData.link,
@@ -104,6 +104,27 @@ const QuoteView = ({ showModal, handleClose, mode, quoteData }) => {
     } catch (error) {
       console.error('Error en la solicitud:', error);
       alert(`Error al ${mode === 'add' ? 'registrar' : 'actualizar'} la cotización. Verifica la conexión al servidor.`);
+    }
+  };
+
+  const handleDelete = async () => {
+    const confirmDelete = window.confirm('¿Estás seguro de que deseas eliminar esta cotización?');
+    if (!confirmDelete) return;
+
+    try {
+      const response = await fetch(`/api/cotizaciones/${quoteData.id}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        alert('Cotización eliminada exitosamente');
+        handleClose();
+      } else {
+        const errorData = await response.json();
+        alert(`Error al eliminar la cotización: ${errorData.error || 'Error desconocido'}`);
+      }
+    } catch (error) {
+      alert('Error al eliminar la cotización. Verifica la conexión al servidor.');
     }
   };
 
@@ -200,12 +221,19 @@ const QuoteView = ({ showModal, handleClose, mode, quoteData }) => {
         </form>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={handleClose}>
-          Cerrar
-        </Button>
-        <Button variant="primary" onClick={handleSubmit}>
-          {mode === 'add' ? 'Agregar Cotización' : 'Guardar Cambios'}
-        </Button>
+        <div className="d-flex justify-content-between w-100">
+          <Button variant="danger" onClick={handleDelete}>
+            Borrar
+          </Button>
+          <div>
+            <Button variant="secondary" onClick={handleClose} className="me-2">
+              Cancelar
+            </Button>
+            <Button variant="primary" onClick={handleSave}>
+              Aceptar
+            </Button>
+          </div>
+        </div>
       </Modal.Footer>
     </Modal>
   );
