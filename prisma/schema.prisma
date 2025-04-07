@@ -32,12 +32,12 @@ model Cotizacion {
   tipo                      String
   tamano                    String
   estatus                   String
-  idConfiguracionCalculadora Int
-  diseno                    String
-  postprocesado             String
-  marketingEntrega          String
-  comentarios               String
-
+  idConfiguracionCalculadora Int?
+  diseno                    String?
+  postprocesado             String?
+  marketingEntrega          String?
+  comentarios               String?
+  DescripcionCliente        String
 }
 
 model Utilizables {
@@ -46,6 +46,7 @@ model Utilizables {
   cantidad        Float
   cantidadActual  Float
   tipo            String
+  material        String
   costoDeCompra   String
 }
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PrinterDetails from './PrinterDetails';
 import Printer from './Printer';
@@ -6,7 +6,6 @@ import ConsumableDetails from './consumables-details';
 import Consumable from './consumables';
 import QuoteRequest from './QuoteRequest';
 import QuoteView from './QuoteView';
-import QuoteViewVendors from './QuoteViewVendors';
 import CalculadoraModal from './CalculadoraModal'; // Importamos el componente CalculadoraModal
 import '../styles/Home.css'; // Import the new CSS file
 
@@ -14,14 +13,81 @@ const Home = () => {
   const navigate = useNavigate();
   const [showPrinterDetails, setShowPrinterDetails] = useState(false);
   const [showConsumableDetails, setShowConsumableDetails] = useState(false);
-  const [showQuoteView, setShowQuoteView] = useState(false);
   const [showQuoteRequest, setShowQuoteRequest] = useState(false);
-  const [showQuoteViewVendors, setShowQuoteViewVendors] = useState(false);
   const [showPrinterModal, setShowPrinterModal] = useState(false); // Modal para agregar impresora
   const [showConsumableModal, setShowConsumableModal] = useState(false); // Modal para agregar consumible
   const [activeTab, setActiveTab] = useState('printer'); // Estado para la pestaña activa
   const [showCalculadoraAdd, setShowCalculadoraAdd] = useState(false); // Estado para agregar calculadora
   const [showCalculadoraEdit, setShowCalculadoraEdit] = useState(false); // Estado para editar calculadora
+  const [selectedQuote, setSelectedQuote] = useState(null); // Estado para la cotización seleccionada
+  const [quotes, setQuotes] = useState([]); // Estado para almacenar todas las cotizaciones
+  const [printers, setPrinters] = useState([]); // Estado para almacenar las impresoras
+  const [consumables, setConsumables] = useState([]); // Estado para almacenar los consumibles
+
+  const fetchQuotes = async () => {
+    try {
+      console.log('Realizando solicitud a /api/quotes'); // Confirmar que se está llamando a la API
+      const response = await fetch(`/api/quotes`);
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Error en la respuesta del servidor: ${response.status} ${response.statusText}`, errorText);
+        throw new Error(`Error en la respuesta del servidor: ${response.status} ${response.statusText}`);
+      }
+      const data = await response.json();
+      console.log('Datos recibidos del servidor:', data); // Verificar los datos recibidos
+      setQuotes(data); // Actualizar el estado con las cotizaciones
+    } catch (error) {
+      console.error('Error al cargar las cotizaciones:', error);
+    }
+  };
+
+  const fetchPrinters = async () => {
+    try {
+      console.log('Realizando solicitud a /api/impresoras'); // Confirmar que se está llamando a la API
+      const response = await fetch(`/api/impresoras`);
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Error en la respuesta del servidor: ${response.status} ${response.statusText}`, errorText);
+        throw new Error(`Error en la respuesta del servidor: ${response.status} ${response.statusText}`);
+      }
+      const data = await response.json();
+      console.log('Datos recibidos del servidor:', data); // Verificar los datos recibidos
+      setPrinters(data); // Actualizar el estado con las impresoras
+    } catch (error) {
+      console.error('Error al cargar las impresoras:', error);
+    }
+  };
+
+  const fetchConsumables = async () => {
+    try {
+      console.log('Realizando solicitud a /api/utilizables'); // Confirmar que se está llamando a la API
+      const response = await fetch(`/api/utilizables`);
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Error en la respuesta del servidor: ${response.status} ${response.statusText}`, errorText);
+        throw new Error(`Error en la respuesta del servidor: ${response.status} ${response.statusText}`);
+      }
+      const data = await response.json();
+      console.log('Datos recibidos del servidor:', data); // Verificar los datos recibidos
+      setConsumables(data); // Actualizar el estado con los consumibles
+    } catch (error) {
+      console.error('Error al cargar los consumibles:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'printer') {
+      fetchPrinters(); // Consultar las impresoras al cambiar a la pestaña "Impresoras"
+      fetchConsumables(); // Consultar los consumibles al cambiar a la pestaña "Impresoras"
+    }
+  }, [activeTab]);
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    if (tab === 'quotes') {
+      fetchQuotes(); // Consultar las cotizaciones al cambiar a la pestaña "Cotizaciones"
+    }
+  };
 
   const handleShowPrinterDetails = () => setShowPrinterDetails(true);
   const handleClosePrinterDetails = () => setShowPrinterDetails(false);
@@ -29,14 +95,8 @@ const Home = () => {
   const handleShowConsumableDetails = () => setShowConsumableDetails(true);
   const handleCloseConsumableDetails = () => setShowConsumableDetails(false);
 
-  const handleShowQuoteView = () => setShowQuoteView(true);
-  const handleCloseQuoteView = () => setShowQuoteView(false);
-
   const handleShowQuoteRequest = () => setShowQuoteRequest(true);
   const handleCloseQuoteRequest = () => setShowQuoteRequest(false);
-
-  const handleShowQuoteViewVendors = () => setShowQuoteViewVendors(true);
-  const handleCloseQuoteViewVendors = () => setShowQuoteViewVendors(false);
 
   const handleShowPrinterModal = () => setShowPrinterModal(true); // Mostrar modal de agregar impresora
   const handleClosePrinterModal = () => setShowPrinterModal(false); // Cerrar modal de agregar impresora
@@ -50,6 +110,12 @@ const Home = () => {
   const handleShowCalculadoraEdit = () => setShowCalculadoraEdit(true); // Mostrar editar calculadora
   const handleCloseCalculadoraEdit = () => setShowCalculadoraEdit(false); // Cerrar editar calculadora
 
+  const handleQuoteSelection = (event) => {
+    const selectedId = event.target.value;
+    const quote = quotes.find((q) => q.id === parseInt(selectedId, 10));
+    setSelectedQuote(quote);
+  };
+
   const renderContent = () => {
     switch (activeTab) {
       case 'printer':
@@ -60,9 +126,14 @@ const Home = () => {
               <div className="form-group">
                 <label htmlFor="printerSelect">Selecciona una Impresora</label>
                 <select className="form-control" id="printerSelect">
-                  <option>Impresora 1</option>
-                  <option>Impresora 2</option>
-                  <option>Impresora 3</option>
+                  <option value="" disabled>
+                    -- Selecciona una impresora --
+                  </option>
+                  {printers.map((printer) => (
+                    <option key={printer.id} value={printer.id}>
+                      {printer.nombre}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div className="d-flex justify-content-between mt-2">
@@ -73,10 +144,14 @@ const Home = () => {
               <div className="form-group mt-3">
                 <label htmlFor="consumableSelect">Selecciona un Consumible</label>
                 <select className="form-control" id="consumableSelect">
-                  <option>Filamento 1</option>
-                  <option>Filamento 2</option>
-                  <option>Resina UV 1</option>
-                  <option>Resina UV 2</option>
+                  <option value="" disabled>
+                    -- Selecciona un consumible --
+                  </option>
+                  {consumables.map((consumable) => (
+                    <option key={consumable.id} value={consumable.id}>
+                      {consumable.nombre}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div className="d-flex justify-content-between mt-2">
@@ -86,41 +161,36 @@ const Home = () => {
             </form>
           </div>
         );
-      case 'quote-clients':
+      case 'quotes':
+        console.log('Renderizando cotizaciones:', quotes); // Confirmar los datos que llegan al select
         return (
           <div>
-            <h3 className="mt-4">Cotizaciones Clientes</h3>
+            <h3 className="mt-4">Cotizaciones</h3>
             <form>
               <div className="form-group">
-                <label htmlFor="quoteSelectClients">Selecciona una Cotización</label>
-                <select className="form-control" id="quoteSelectClients">
-                  <option>Cotización 1</option>
-                  <option>Cotización 2</option>
-                  <option>Cotización 3</option>
+                <select
+                  className="form-control"
+                  id="quoteSelect"
+                  onChange={handleQuoteSelection}
+                  value={selectedQuote?.id || ''}
+                >
+                  <option value="" disabled>
+                    -- Selecciona una cotización --
+                  </option>
+                  {quotes.map((quote) => (
+                    <option key={quote.id} value={quote.id}>
+                      {quote.nombre}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div className="d-flex justify-content-between mt-2">
-                <button type="button" className="btn btn-primary" onClick={handleShowQuoteView}>Ver</button>
-                <button type="button" className="btn btn-success" onClick={handleShowQuoteRequest}>Pedir</button>
-              </div>
-            </form>
-          </div>
-        );
-      case 'quote-vendors':
-        return (
-          <div>
-            <h3 className="mt-4">Cotizaciones Vendedores</h3>
-            <form>
-              <div className="form-group">
-                <label htmlFor="quoteSelectVendors">Selecciona una Cotización</label>
-                <select className="form-control" id="quoteSelectVendors">
-                  <option>Cotización 1</option>
-                  <option>Cotización 2</option>
-                  <option>Cotización 3</option>
-                </select>
-              </div>
-              <div className="d-flex justify-content-between mt-2">
-                <button type="button" className="btn btn-primary" onClick={handleShowQuoteViewVendors}>Ver</button>
+                <button type="button" className="btn btn-primary">
+                  Editar
+                </button>
+                <button type="button" className="btn btn-success" onClick={handleShowQuoteRequest}>
+                  Agregar
+                </button>
               </div>
             </form>
           </div>
@@ -165,22 +235,17 @@ const Home = () => {
       </div>
       <ul className="nav nav-tabs" id="myTab" role="tablist">
         <li className="nav-item">
-          <a className={`nav-link ${activeTab === 'printer' ? 'active' : ''}`} id="printer-tab" data-bs-toggle="tab" href="#printer" role="tab" aria-controls="printer" aria-selected={activeTab === 'printer'} onClick={() => setActiveTab('printer')}>
+          <a className={`nav-link ${activeTab === 'printer' ? 'active' : ''}`} id="printer-tab" data-bs-toggle="tab" href="#printer" role="tab" aria-controls="printer" aria-selected={activeTab === 'printer'} onClick={() => handleTabChange('printer')}>
             Registro de Impresoras y Consumible
           </a>
         </li>
         <li className="nav-item">
-          <a className={`nav-link ${activeTab === 'quote-clients' ? 'active' : ''}`} id="quote-clients-tab" data-bs-toggle="tab" href="#quote-clients" role="tab" aria-controls="quote-clients" aria-selected={activeTab === 'quote-clients'} onClick={() => setActiveTab('quote-clients')}>
-            Cotizaciones Clientes
+          <a className={`nav-link ${activeTab === 'quotes' ? 'active' : ''}`} id="quotes-tab" data-bs-toggle="tab" href="#quotes" role="tab" aria-controls="quotes" aria-selected={activeTab === 'quotes'} onClick={() => handleTabChange('quotes')}>
+            Cotizaciones
           </a>
         </li>
         <li className="nav-item">
-          <a className={`nav-link ${activeTab === 'quote-vendors' ? 'active' : ''}`} id="quote-vendors-tab" data-bs-toggle="tab" href="#quote-vendors" role="tab" aria-controls="quote-vendors" aria-selected={activeTab === 'quote-vendors'} onClick={() => setActiveTab('quote-vendors')}>
-            Cotizaciones Vendedores
-          </a>
-        </li>
-        <li className="nav-item">
-          <a className={`nav-link ${activeTab === 'calculator' ? 'active' : ''}`} id="calculator-tab" data-bs-toggle="tab" href="#calculator" role="tab" aria-controls="calculator" aria-selected={activeTab === 'calculator'} onClick={() => setActiveTab('calculator')}>
+          <a className={`nav-link ${activeTab === 'calculator' ? 'active' : ''}`} id="calculator-tab" data-bs-toggle="tab" href="#calculator" role="tab" aria-controls="calculator" aria-selected={activeTab === 'calculator'} onClick={() => handleTabChange('calculator')}>
             Calculadora
           </a>
         </li>
@@ -196,8 +261,6 @@ const Home = () => {
       {showConsumableDetails && <ConsumableDetails showModal={showConsumableDetails} handleClose={handleCloseConsumableDetails} />}
       {showConsumableModal && <Consumable showModal={showConsumableModal} handleClose={handleCloseConsumableModal} />}
       {showQuoteRequest && <QuoteRequest showModal={showQuoteRequest} handleClose={handleCloseQuoteRequest} />}
-      {showQuoteView && <QuoteView showModal={showQuoteView} handleClose={handleCloseQuoteView} />}
-      {showQuoteViewVendors && <QuoteViewVendors showModal={showQuoteViewVendors} handleClose={handleCloseQuoteViewVendors} />}
       {showCalculadoraAdd && (
         <CalculadoraModal
           showModal={showCalculadoraAdd}

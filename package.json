@@ -44,5 +44,6 @@
   },
   "devDependencies": {
     "prisma": "^5.19.1"
-  }
+  },
+  "proxy": "http://localhost:4000"
 }

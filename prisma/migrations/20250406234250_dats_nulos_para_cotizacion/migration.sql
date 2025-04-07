@@ -1,0 +1,23 @@
+BEGIN TRY
+
+BEGIN TRAN;
+
+-- AlterTable
+ALTER TABLE [dbo].[Cotizacion] ALTER COLUMN [comentarios] NVARCHAR(1000) NULL;
+ALTER TABLE [dbo].[Cotizacion] ALTER COLUMN [diseno] NVARCHAR(1000) NULL;
+ALTER TABLE [dbo].[Cotizacion] ALTER COLUMN [idConfiguracionCalculadora] INT NULL;
+ALTER TABLE [dbo].[Cotizacion] ALTER COLUMN [marketingEntrega] NVARCHAR(1000) NULL;
+ALTER TABLE [dbo].[Cotizacion] ALTER COLUMN [postprocesado] NVARCHAR(1000) NULL;
+
+COMMIT TRAN;
+
+END TRY
+BEGIN CATCH
+
+IF @@TRANCOUNT > 0
+BEGIN
+    ROLLBACK TRAN;
+END;
+THROW
+
+END CATCH

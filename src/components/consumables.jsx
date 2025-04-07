@@ -3,38 +3,64 @@ import { Modal, Button } from 'react-bootstrap';
 import '../styles/Modal.css'; // Import the new CSS file
 
 const Consumables = ({ showModal, handleClose }) => {
-    const [consumableName, setConsumableName] = useState('');
-    const [quantity, setQuantity] = useState('');
-    const [purchaseCost, setPurchaseCost] = useState('');
-    const [saleCost, setSaleCost] = useState('');
-    const [consumableType, setConsumableType] = useState('');
-    const [material, setMaterial] = useState('');
-    const [imagePreview, setImagePreview] = useState('./src/Img/ruta_de_la_imagen_de_consumible.jpg');
+    const [formData, setFormData] = useState({
+        nombre: '',
+        cantidad: '',
+        tipo: 'Filamento', // Valor predeterminado
+        material: '',
+        costoDeCompra: '',
+    });
 
-    const handleImageChange = (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                setImagePreview(e.target.result);
-            };
-            reader.readAsDataURL(file);
-        }
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData((prevData) => ({
+            ...prevData,
+            [name]: value,
+        }));
     };
 
-    const handleSubmit = (event) => {
-        event.preventDefault();
-        console.log({
-            consumableName,
-            quantity,
-            purchaseCost,
-            saleCost,
-            consumableType,
-            material,
-            imagePreview,
-        });
-        // Aquí puedes agregar la lógica para manejar el envío del formulario
-        handleClose();
+    const handleRadioChange = (e) => {
+        setFormData((prevData) => ({
+            ...prevData,
+            tipo: e.target.value, // Actualizamos el tipo según el radio button seleccionado
+        }));
+    };
+
+    const handleSubmit = async () => {
+        const payload = {
+            nombre: formData.nombre,
+            cantidad: parseFloat(formData.cantidad),
+            cantidadActual: parseFloat(formData.cantidad), // `cantidadActual` toma el valor de `cantidad`
+            tipo: formData.tipo,
+            material: formData.material,
+            costoDeCompra: formData.costoDeCompra,
+        };
+
+        console.log('Datos enviados:', payload);
+
+        try {
+            const response = await fetch('http://localhost:4000/api/utilizables', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log('Respuesta del servidor:', data);
+                alert('Consumible registrado exitosamente');
+                handleClose();
+            } else {
+                const errorData = await response.json();
+                console.error('Error del servidor:', errorData);
+                alert(`Error al registrar el consumible: ${errorData.error || 'Error desconocido'}`);
+            }
+        } catch (error) {
+            console.error('Error en la solicitud:', error);
+            alert('Error al registrar el consumible. Verifica la conexión al servidor.');
+        }
     };
 
     return (
@@ -43,75 +69,47 @@ const Consumables = ({ showModal, handleClose }) => {
                 <Modal.Title>Registro de Consumibles</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                <form id="consumableForm" onSubmit={handleSubmit}>
-                    <div className="image-container mb-3">
-                        <img src={imagePreview} alt="Imagen del Consumible" id="imagePreview" className="img-fluid" />
-                    </div>
+                <form id="consumableForm" onSubmit={(e) => e.preventDefault()}>
                     <div className="form-group">
-                        <label htmlFor="consumableName">Nombre del Consumible</label>
+                        <label htmlFor="nombre">Nombre del Consumible</label>
                         <input
                             type="text"
                             className="form-control"
-                            id="consumableName"
+                            id="nombre"
+                            name="nombre"
                             placeholder="Ingresa el nombre del consumible"
                             required
-                            value={consumableName}
-                            onChange={(e) => setConsumableName(e.target.value)}
+                            value={formData.nombre}
+                            onChange={handleChange}
                         />
                     </div>
                     <div className="form-group mt-3">
-                        <label htmlFor="consumableQuantity">Cantidad</label>
+                        <label htmlFor="cantidad">Cantidad</label>
                         <input
                             type="number"
                             className="form-control"
-                            id="consumableQuantity"
-                            placeholder="Ingresa la cantidad disponible"
+                            id="cantidad"
+                            name="cantidad"
+                            placeholder="Ingresa la cantidad total"
                             required
-                            value={quantity}
-                            onChange={(e) => setQuantity(e.target.value)}
+                            value={formData.cantidad}
+                            onChange={handleChange}
                         />
                     </div>
                     <div className="form-group mt-3">
-                        <label htmlFor="purchaseCost">Costo de Compra</label>
-                        <input
-                            type="number"
-                            className="form-control"
-                            id="purchaseCost"
-                            placeholder="Ingresa el costo de compra"
-                            step="0.01"
-                            required
-                            value={purchaseCost}
-                            onChange={(e) => setPurchaseCost(e.target.value)}
-                        />
-                    </div>
-                    <div className="form-group mt-3">
-                        <label htmlFor="saleCost">Costo de Venta</label>
-                        <input
-                            type="number"
-                            className="form-control"
-                            id="saleCost"
-                            placeholder="Ingresa el costo de venta"
-                            step="0.01"
-                            required
-                            value={saleCost}
-                            onChange={(e) => setSaleCost(e.target.value)}
-                        />
-                    </div>
-                    <div className="form-group mt-3">
-                        <label htmlFor="consumableType">Tipo de Consumible</label>
-                        <div id="consumableType">
+                        <label htmlFor="tipo">Tipo de Consumible</label>
+                        <div id="tipo">
                             <div className="form-check">
                                 <input
                                     className="form-check-input"
                                     type="radio"
-                                    name="consumableType"
-                                    id="filament"
+                                    name="tipo"
+                                    id="filamento"
                                     value="Filamento"
-                                    required
-                                    checked={consumableType === 'Filamento'}
-                                    onChange={(e) => setConsumableType(e.target.value)}
+                                    checked={formData.tipo === 'Filamento'}
+                                    onChange={handleRadioChange}
                                 />
-                                <label className="form-check-label" htmlFor="filament">
+                                <label className="form-check-label" htmlFor="filamento">
                                     Filamento
                                 </label>
                             </div>
@@ -119,14 +117,13 @@ const Consumables = ({ showModal, handleClose }) => {
                                 <input
                                     className="form-check-input"
                                     type="radio"
-                                    name="consumableType"
-                                    id="resinUV"
+                                    name="tipo"
+                                    id="resinaUV"
                                     value="Resina UV"
-                                    required
-                                    checked={consumableType === 'Resina UV'}
-                                    onChange={(e) => setConsumableType(e.target.value)}
+                                    checked={formData.tipo === 'Resina UV'}
+                                    onChange={handleRadioChange}
                                 />
-                                <label className="form-check-label" htmlFor="resinUV">
+                                <label className="form-check-label" htmlFor="resinaUV">
                                     Resina UV
                                 </label>
                             </div>
@@ -138,19 +135,24 @@ const Consumables = ({ showModal, handleClose }) => {
                             type="text"
                             className="form-control"
                             id="material"
+                            name="material"
                             placeholder="Ingresa el material del consumible"
                             required
-                            value={material}
-                            onChange={(e) => setMaterial(e.target.value)}
+                            value={formData.material}
+                            onChange={handleChange}
                         />
                     </div>
                     <div className="form-group mt-3">
-                        <label htmlFor="consumableImage">Agregar Imagen del Consumible</label>
+                        <label htmlFor="costoDeCompra">Costo de Compra</label>
                         <input
-                            type="file"
-                            className="form-control-file"
-                            id="consumableImage"
-                            onChange={handleImageChange}
+                            type="text"
+                            className="form-control"
+                            id="costoDeCompra"
+                            name="costoDeCompra"
+                            placeholder="Ingresa el costo de compra"
+                            required
+                            value={formData.costoDeCompra}
+                            onChange={handleChange}
                         />
                     </div>
                 </form>
