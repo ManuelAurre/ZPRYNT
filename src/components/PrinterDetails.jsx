@@ -1,63 +1,118 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 
-const PrinterDetails = ({ showModal, handleClose }) => {
+const PrinterDetails = ({ showModal, handleClose, selectedPrinterId }) => {
+  const [printerData, setPrinterData] = useState({
+    nombre: '',
+    tipo: '',
+    imagen: '',
+    velocidad: '',
+  });
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const fetchPrinterDetails = async () => {
+      if (selectedPrinterId && showModal) {
+        setLoading(true);
+        setError('');
+        try {
+          const response = await fetch(`http://localhost:4000/api/impresoras/${selectedPrinterId}`);
+          if (response.ok) {
+            const data = await response.json();
+            setPrinterData({
+              nombre: data.nombre,
+              tipo: data.tipo,
+              imagen: data.imagen,
+              velocidad: data.velocidad.toString(),
+            });
+          } else {
+            setError('Error al obtener los detalles de la impresora');
+          }
+        } catch (error) {
+          setError('Error en la solicitud al servidor');
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchPrinterDetails();
+  }, [selectedPrinterId, showModal]); // Ejecutar cuando cambia el ID seleccionado o se abre el modal
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setPrinterData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+
   return (
     <Modal show={showModal} onHide={handleClose}>
       <Modal.Header closeButton>
         <Modal.Title>Detalles de la Impresora</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <div className="row">
-          <div className="col-md-6">
-            <img
-              src="./Img/ruta_de_la_imagen_de_impresora.jpg" // Update the path to the image
-              alt="Imagen de Impresora"
-              className="img-fluid"
-            />
-            {/* Sección para cargar nueva imagen */}
-            <div className="form-group mt-3">
-              <label htmlFor="uploadImage">Cargar Nueva Imagen:</label>
-              <input type="file" className="form-control-file" id="uploadImage" />
-            </div>
-          </div>
-          <div className="col-md-6">
+        {loading ? (
+          <p>Cargando datos...</p>
+        ) : error ? (
+          <p className="text-danger">{error}</p>
+        ) : (
+          <form>
             <div className="form-group">
               <label htmlFor="printerName">Nombre:</label>
-              <input type="text" className="form-control" id="printerName" defaultValue="Impresora X" />
+              <input
+                type="text"
+                className="form-control"
+                id="printerName"
+                name="nombre"
+                value={printerData.nombre}
+                onChange={handleChange}
+              />
             </div>
-            <div className="form-group">
+            <div className="form-group mt-3">
+              <label htmlFor="printerType">Tipo:</label>
+              <input
+                type="text"
+                className="form-control"
+                id="printerType"
+                name="tipo"
+                value={printerData.tipo}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="form-group mt-3">
+              <label htmlFor="printerImage">Imagen:</label>
+              <input
+                type="text"
+                className="form-control"
+                id="printerImage"
+                name="imagen"
+                value={printerData.imagen}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="form-group mt-3">
               <label htmlFor="printerSpeed">Velocidad:</label>
-              <input type="text" className="form-control" id="printerSpeed" defaultValue="30 mm/s" />
+              <input
+                type="text"
+                className="form-control"
+                id="printerSpeed"
+                name="velocidad"
+                value={printerData.velocidad}
+                onChange={handleChange}
+              />
             </div>
-            <div className="form-group">
-              <label htmlFor="printerCost">Costo por Tiempo:</label>
-              <input type="text" className="form-control" id="printerCost" defaultValue="$0.90 por minuto" />
-            </div>
-            <div className="form-group">
-              <label htmlFor="printerType">Tipo de Impresora:</label>
-              <div className="form-check">
-                <input className="form-check-input" type="radio" id="filament" name="printerType" value="filament" defaultChecked />
-                <label className="form-check-label" htmlFor="filament">
-                  Filamento
-                </label>
-              </div>
-              <div className="form-check">
-                <input className="form-check-input" type="radio" id="resinUV" name="printerType" value="resinUV" />
-                <label className="form-check-label" htmlFor="resinUV">
-                  Resina UV
-                </label>
-              </div>
-            </div>
-            <Button variant="secondary" onClick={handleClose}>
-              Editar
-            </Button>
-            <Button variant="primary" onClick={handleClose}>
-              Volver
-            </Button>
-          </div>
-        </div>
+          </form>
+        )}
       </Modal.Body>
+      <Modal.Footer>
+        <Button variant="secondary" onClick={handleClose}>
+          Cerrar
+        </Button>
+      </Modal.Footer>
     </Modal>
   );
 };

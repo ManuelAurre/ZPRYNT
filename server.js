@@ -135,12 +135,14 @@ app.post('/api/impresoras', async (req, res) => {
 app.get('/api/impresoras/:id', async (req, res) => {
   const { id } = req.params;
   try {
+    console.log(`Consulta recibida para impresora con ID: ${id}`); // Depuración
     const impresora = await prisma.impresora.findUnique({
       where: { id: parseInt(id, 10) },
     });
     if (!impresora) {
       return res.status(404).json({ error: 'Impresora no encontrada' });
     }
+    console.log('Datos de la impresora obtenidos:', impresora); // Depuración
     res.json(impresora);
   } catch (error) {
     console.error('Error al obtener los detalles de la impresora:', error);
@@ -194,6 +196,30 @@ app.post('/api/utilizables', async (req, res) => {
   } catch (error) {
     console.error('Error al registrar el consumible:', error);
     res.status(500).json({ error: 'Error al registrar el consumible. Verifica el modelo en schema.prisma y las migraciones.' });
+  }
+});
+
+// Ruta para obtener los detalles de un consumible específico
+app.get('/api/utilizables/:id', async (req, res) => {
+  let { id } = req.params;
+  try {
+    console.log(`Valor original de ID recibido:`, id); // Depuración
+    id = parseInt(id, 10); // Convertir el ID a entero
+    if (isNaN(id)) {
+      return res.status(400).json({ error: 'El ID proporcionado no es válido' });
+    }
+    console.log(`Consulta recibida para consumible con ID: ${id}`); // Depuración
+    const consumible = await prisma.utilizables.findUnique({
+      where: { id },
+    });
+    if (!consumible) {
+      return res.status(404).json({ error: 'Consumible no encontrado' });
+    }
+    console.log('Datos del consumible obtenidos:', consumible); // Depuración
+    res.json(consumible);
+  } catch (error) {
+    console.error('Error al obtener los detalles del consumible:', error);
+    res.status(500).json({ error: 'Error al obtener los detalles del consumible' });
   }
 });
 

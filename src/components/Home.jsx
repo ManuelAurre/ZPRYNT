@@ -86,8 +86,8 @@ const Home = () => {
 
   const fetchPrinterDetails = async (printerId) => {
     try {
-      console.log(`Realizando solicitud a /api/impresoras/${printerId}`); // Confirmar que se está llamando a la API
-      const response = await fetch(`/api/impresoras/${printerId}`);
+      console.log(`Realizando solicitud a /api/impresoras/${printerId}`); // Confirmar que se está llamando a la API correcta
+      const response = await fetch(`/api/impresoras/${printerId}`); // Asegúrate de usar la ruta correcta
       if (!response.ok) {
         const errorText = await response.text();
         console.error(`Error en la respuesta del servidor: ${response.status} ${response.statusText}`, errorText);
@@ -96,7 +96,6 @@ const Home = () => {
       const data = await response.json();
       console.log('Datos de la impresora recibidos del servidor:', data); // Verificar los datos recibidos
       setSelectedPrinterDetails(data); // Actualizar el estado con los detalles de la impresora
-      setShowPrinterDetails(true); // Mostrar el modal
     } catch (error) {
       console.error('Error al cargar los detalles de la impresora:', error);
     }
@@ -138,7 +137,7 @@ const Home = () => {
 
   const handleShowPrinterDetails = () => {
     if (selectedPrinterId) {
-      fetchPrinterDetails(selectedPrinterId); // Consultar los detalles de la impresora seleccionada
+      setShowPrinterDetails(true); // Mostrar el modal
     } else {
       alert('Por favor selecciona una impresora.');
     }
@@ -152,7 +151,7 @@ const Home = () => {
 
   const handleShowConsumableDetails = () => {
     if (selectedConsumableId) {
-      fetchConsumableDetails(selectedConsumableId); // Consultar los detalles del consumible seleccionado
+      setShowConsumableDetails(true); // Mostrar el modal
     } else {
       alert('Por favor selecciona un consumible.');
     }
@@ -347,19 +346,19 @@ const Home = () => {
       </div>
 
       {/* Modales */}
-      {showPrinterDetails && selectedPrinterDetails && (
+      {showPrinterDetails && (
         <PrinterDetails
           showModal={showPrinterDetails}
           handleClose={handleClosePrinterDetails}
-          printer={selectedPrinterDetails} // Pasar los detalles de la impresora al modal
+          selectedPrinterId={selectedPrinterId} // Pasar el ID seleccionado al modal
         />
       )}
       {showPrinterModal && <Printer showModal={showPrinterModal} handleClose={handleClosePrinterModal} />}
-      {showConsumableDetails && selectedConsumableId && (
+      {showConsumableDetails && (
         <ConsumableDetails
           showModal={showConsumableDetails}
           handleClose={handleCloseConsumableDetails}
-          consumable={selectedConsumableId} // Pasar los detalles del consumible al modal
+          selectedConsumableId={selectedConsumableId} // Pasar el ID seleccionado al modal
         />
       )}
       {showConsumableModal && <Consumable showModal={showConsumableModal} handleClose={handleCloseConsumableModal} />}
