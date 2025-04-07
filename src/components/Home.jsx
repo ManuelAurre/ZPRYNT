@@ -24,6 +24,9 @@ const Home = () => {
   const [printers, setPrinters] = useState([]); // Estado para almacenar las impresoras
   const [consumables, setConsumables] = useState([]); // Estado para almacenar los consumibles
   const [calculatorConfigs, setCalculatorConfigs] = useState([]); // Estado para almacenar las configuraciones de la calculadora
+  const [selectedPrinterId, setSelectedPrinterId] = useState(null); // Estado para almacenar el ID de la impresora seleccionada
+  const [selectedPrinterDetails, setSelectedPrinterDetails] = useState(null); // Estado para almacenar los detalles de la impresora seleccionada
+  const [selectedConsumableId, setSelectedConsumableId] = useState(null); // Estado para almacenar el ID del consumible seleccionado
 
   const fetchQuotes = async () => {
     try {
@@ -46,14 +49,10 @@ const Home = () => {
     try {
       console.log('Realizando solicitud a /api/impresoras'); // Confirmar que se está llamando a la API
       const response = await fetch(`/api/impresoras`);
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`Error en la respuesta del servidor: ${response.status} ${response.statusText}`, errorText);
-        throw new Error(`Error en la respuesta del servidor: ${response.status} ${response.statusText}`);
-      }
+      if (!response.ok) throw new Error('Error al obtener las impresoras');
       const data = await response.json();
-      console.log('Datos recibidos del servidor:', data); // Verificar los datos recibidos
-      setPrinters(data); // Actualizar el estado con las impresoras
+      console.log('Impresoras obtenidas:', data); // Verificar los datos
+      setPrinters(data);
     } catch (error) {
       console.error('Error al cargar las impresoras:', error);
     }
@@ -63,14 +62,10 @@ const Home = () => {
     try {
       console.log('Realizando solicitud a /api/utilizables'); // Confirmar que se está llamando a la API
       const response = await fetch(`/api/utilizables`);
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`Error en la respuesta del servidor: ${response.status} ${response.statusText}`, errorText);
-        throw new Error(`Error en la respuesta del servidor: ${response.status} ${response.statusText}`);
-      }
+      if (!response.ok) throw new Error('Error al obtener los consumibles');
       const data = await response.json();
-      console.log('Datos recibidos del servidor:', data); // Verificar los datos recibidos
-      setConsumables(data); // Actualizar el estado con los consumibles
+      console.log('Consumibles obtenidos:', data); // Verificar los datos
+      setConsumables(data);
     } catch (error) {
       console.error('Error al cargar los consumibles:', error);
     }
@@ -80,16 +75,48 @@ const Home = () => {
     try {
       console.log('Realizando solicitud a /api/calculadoras'); // Confirmar que se está llamando a la API
       const response = await fetch(`/api/calculadoras`);
+      if (!response.ok) throw new Error('Error al obtener las configuraciones de calculadora');
+      const data = await response.json();
+      console.log('Configuraciones de calculadora obtenidas:', data); // Verificar los datos
+      setCalculatorConfigs(data);
+    } catch (error) {
+      console.error('Error al cargar las configuraciones de calculadora:', error);
+    }
+  };
+
+  const fetchPrinterDetails = async (printerId) => {
+    try {
+      console.log(`Realizando solicitud a /api/impresoras/${printerId}`); // Confirmar que se está llamando a la API
+      const response = await fetch(`/api/impresoras/${printerId}`);
       if (!response.ok) {
         const errorText = await response.text();
         console.error(`Error en la respuesta del servidor: ${response.status} ${response.statusText}`, errorText);
         throw new Error(`Error en la respuesta del servidor: ${response.status} ${response.statusText}`);
       }
       const data = await response.json();
-      console.log('Datos recibidos del servidor:', data); // Verificar los datos recibidos
-      setCalculatorConfigs(data); // Actualizar el estado con las configuraciones
+      console.log('Datos de la impresora recibidos del servidor:', data); // Verificar los datos recibidos
+      setSelectedPrinterDetails(data); // Actualizar el estado con los detalles de la impresora
+      setShowPrinterDetails(true); // Mostrar el modal
     } catch (error) {
-      console.error('Error al cargar las configuraciones de la calculadora:', error);
+      console.error('Error al cargar los detalles de la impresora:', error);
+    }
+  };
+
+  const fetchConsumableDetails = async (consumableId) => {
+    try {
+      console.log(`Realizando solicitud a /api/utilizables/${consumableId}`); // Confirmar que se está llamando a la API
+      const response = await fetch(`/api/utilizables/${consumableId}`);
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Error en la respuesta del servidor: ${response.status} ${response.statusText}`, errorText);
+        throw new Error(`Error en la respuesta del servidor: ${response.status} ${response.statusText}`);
+      }
+      const data = await response.json();
+      console.log('Datos del consumible recibidos del servidor:', data); // Verificar los datos recibidos
+      setSelectedConsumableId(data); // Actualizar el estado con los detalles del consumible
+      setShowConsumableDetails(true); // Mostrar el modal
+    } catch (error) {
+      console.error('Error al cargar los detalles del consumible:', error);
     }
   };
 
@@ -109,11 +136,33 @@ const Home = () => {
     }
   };
 
-  const handleShowPrinterDetails = () => setShowPrinterDetails(true);
+  const handleShowPrinterDetails = () => {
+    if (selectedPrinterId) {
+      fetchPrinterDetails(selectedPrinterId); // Consultar los detalles de la impresora seleccionada
+    } else {
+      alert('Por favor selecciona una impresora.');
+    }
+  };
+
   const handleClosePrinterDetails = () => setShowPrinterDetails(false);
 
-  const handleShowConsumableDetails = () => setShowConsumableDetails(true);
+  const handlePrinterSelection = (event) => {
+    setSelectedPrinterId(event.target.value); // Actualizar el ID de la impresora seleccionada
+  };
+
+  const handleShowConsumableDetails = () => {
+    if (selectedConsumableId) {
+      fetchConsumableDetails(selectedConsumableId); // Consultar los detalles del consumible seleccionado
+    } else {
+      alert('Por favor selecciona un consumible.');
+    }
+  };
+
   const handleCloseConsumableDetails = () => setShowConsumableDetails(false);
+
+  const handleConsumableSelection = (event) => {
+    setSelectedConsumableId(event.target.value); // Actualizar el ID del consumible seleccionado
+  };
 
   const handleShowQuoteRequest = () => setShowQuoteRequest(true);
   const handleCloseQuoteRequest = () => setShowQuoteRequest(false);
@@ -145,7 +194,12 @@ const Home = () => {
             <form>
               <div className="form-group">
                 <label htmlFor="printerSelect">Selecciona una Impresora</label>
-                <select className="form-control" id="printerSelect">
+                <select
+                  className="form-control"
+                  id="printerSelect"
+                  onChange={handlePrinterSelection}
+                  value={selectedPrinterId || ''}
+                >
                   <option value="" disabled>
                     -- Selecciona una impresora --
                   </option>
@@ -157,13 +211,22 @@ const Home = () => {
                 </select>
               </div>
               <div className="d-flex justify-content-between mt-2">
-                <button type="button" className="btn btn-primary" onClick={handleShowPrinterDetails}>Ver</button>
-                <button type="button" className="btn btn-success" onClick={handleShowPrinterModal}>Agregar</button>
+                <button type="button" className="btn btn-primary" onClick={handleShowPrinterDetails}>
+                  Editar
+                </button>
+                <button type="button" className="btn btn-success" onClick={handleShowPrinterModal}>
+                  Agregar
+                </button>
               </div>
               <h3 className="mt-4">Registro de Consumible</h3>
               <div className="form-group mt-3">
                 <label htmlFor="consumableSelect">Selecciona un Consumible</label>
-                <select className="form-control" id="consumableSelect">
+                <select
+                  className="form-control"
+                  id="consumableSelect"
+                  onChange={handleConsumableSelection}
+                  value={selectedConsumableId || ''}
+                >
                   <option value="" disabled>
                     -- Selecciona un consumible --
                   </option>
@@ -175,8 +238,12 @@ const Home = () => {
                 </select>
               </div>
               <div className="d-flex justify-content-between mt-2">
-                <button type="button" className="btn btn-primary" onClick={handleShowConsumableDetails}>Ver</button>
-                <button type="button" className="btn btn-success" onClick={handleShowConsumableModal}>Agregar</button>
+                <button type="button" className="btn btn-primary" onClick={handleShowConsumableDetails}>
+                  Editar
+                </button>
+                <button type="button" className="btn btn-success" onClick={handleShowConsumableModal}>
+                  Agregar
+                </button>
               </div>
             </form>
           </div>
@@ -280,9 +347,21 @@ const Home = () => {
       </div>
 
       {/* Modales */}
-      {showPrinterDetails && <PrinterDetails showModal={showPrinterDetails} handleClose={handleClosePrinterDetails} />}
+      {showPrinterDetails && selectedPrinterDetails && (
+        <PrinterDetails
+          showModal={showPrinterDetails}
+          handleClose={handleClosePrinterDetails}
+          printer={selectedPrinterDetails} // Pasar los detalles de la impresora al modal
+        />
+      )}
       {showPrinterModal && <Printer showModal={showPrinterModal} handleClose={handleClosePrinterModal} />}
-      {showConsumableDetails && <ConsumableDetails showModal={showConsumableDetails} handleClose={handleCloseConsumableDetails} />}
+      {showConsumableDetails && selectedConsumableId && (
+        <ConsumableDetails
+          showModal={showConsumableDetails}
+          handleClose={handleCloseConsumableDetails}
+          consumable={selectedConsumableId} // Pasar los detalles del consumible al modal
+        />
+      )}
       {showConsumableModal && <Consumable showModal={showConsumableModal} handleClose={handleCloseConsumableModal} />}
       {showQuoteRequest && <QuoteRequest showModal={showQuoteRequest} handleClose={handleCloseQuoteRequest} />}
       {showCalculadoraAdd && (

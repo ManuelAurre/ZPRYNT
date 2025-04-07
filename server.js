@@ -9,11 +9,6 @@ const prisma = new PrismaClient();
 app.use(cors());
 app.use(bodyParser.json());
 
-app.use((req, res, next) => {
-  res.setHeader('Cache-Control', 'no-store'); // Deshabilitar la caché
-  next();
-});
-
 app.post('/register', async (req, res) => {
   const { name, email, password, tipo, edad } = req.body;
   try {
@@ -88,17 +83,19 @@ app.post('/api/calculadoras', async (req, res) => {
 app.get('/api/calculadoras', async (req, res) => {
   try {
     console.log('Consulta recibida en /api/calculadoras'); // Confirmar que la ruta está siendo llamada
-    const configuraciones = await prisma.configuracionCalculadora.findMany({
+    const calculadoras = await prisma.configuracionCalculadora.findMany({
       select: {
         id: true,
+        utilizablesId: true,
+        impresoraId: true,
         costoPorTiempo: true,
         costoDiseno: true,
         costoPostprocesado: true,
         costoMarketingEntrega: true,
       },
     });
-    console.log('Datos obtenidos de la base de datos:', configuraciones); // Verificar los datos obtenidos
-    res.json(configuraciones);
+    console.log('Datos obtenidos de la base de datos:', calculadoras); // Verificar los datos obtenidos
+    res.json(calculadoras);
   } catch (error) {
     console.error('Error al obtener las configuraciones de la calculadora:', error);
     res.status(500).json({ error: 'Error al obtener las configuraciones de la calculadora' });
@@ -131,6 +128,23 @@ app.post('/api/impresoras', async (req, res) => {
   } catch (error) {
     console.error('Error al registrar la impresora:', error);
     res.status(500).json({ error: 'Error al registrar la impresora. Verifica el modelo en schema.prisma y las migraciones.' });
+  }
+});
+
+// Ruta para obtener los detalles de una impresora específica
+app.get('/api/impresoras/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const impresora = await prisma.impresora.findUnique({
+      where: { id: parseInt(id, 10) },
+    });
+    if (!impresora) {
+      return res.status(404).json({ error: 'Impresora no encontrada' });
+    }
+    res.json(impresora);
+  } catch (error) {
+    console.error('Error al obtener los detalles de la impresora:', error);
+    res.status(500).json({ error: 'Error al obtener los detalles de la impresora' });
   }
 });
 
@@ -205,7 +219,7 @@ app.get('/api/utilizables', async (req, res) => {
 app.post('/api/cotizaciones', async (req, res) => {
   console.log('Solicitud recibida en /api/cotizaciones:', req.body);
 
-  const { nombre, link, presupuesto, tamano, DescripcionCliente, tipo, diseno, postprocesado, marketingEntrega, comentarios, idConfiguracionCalculadora } = req.body;
+  const { nombre, link, presupuesto, tamano, DescripcionCliente, tipo } = req.body;
 
   if (!nombre || !link || !presupuesto || !tamano || !DescripcionCliente || !tipo) {
     console.error('Faltan campos obligatorios');
@@ -222,11 +236,11 @@ app.post('/api/cotizaciones', async (req, res) => {
         DescripcionCliente,
         tipo,
         estatus: 'Pendiente', // Valor predeterminado
-        idConfiguracionCalculadora: idConfiguracionCalculadora ? parseInt(idConfiguracionCalculadora, 10) : undefined,
-        diseno: diseno || undefined,
-        postprocesado: postprocesado || undefined,
-        marketingEntrega: marketingEntrega || undefined,
-        comentarios: comentarios || undefined,
+        idConfiguracionCalculadora: null, // Valor por defecto
+        diseno: null, // Valor por defecto
+        postprocesado: null, // Valor por defecto
+        marketingEntrega: null, // Valor por defecto
+        comentarios: null, // Valor por defecto
       },
     });
 
