@@ -27,6 +27,10 @@ const Home = () => {
   const [selectedPrinterId, setSelectedPrinterId] = useState(null); // Estado para almacenar el ID de la impresora seleccionada
   const [selectedPrinterDetails, setSelectedPrinterDetails] = useState(null); // Estado para almacenar los detalles de la impresora seleccionada
   const [selectedConsumableId, setSelectedConsumableId] = useState(null); // Estado para almacenar el ID del consumible seleccionado
+  const [selectedCalculatorId, setSelectedCalculatorId] = useState(null); // Estado para almacenar el ID de la configuración seleccionada
+  const [selectedCalculatorDetails, setSelectedCalculatorDetails] = useState(null); // Estado para almacenar los detalles de la configuración seleccionada
+  const [selectedQuoteId, setSelectedQuoteId] = useState(null); // Estado para almacenar el ID de la cotización seleccionada
+  const [selectedQuoteDetails, setSelectedQuoteDetails] = useState(null); // Estado para almacenar los detalles de la cotización seleccionada
 
   const fetchQuotes = async () => {
     try {
@@ -119,6 +123,42 @@ const Home = () => {
     }
   };
 
+  const fetchCalculatorDetails = async (calculatorId) => {
+    try {
+      console.log(`Realizando solicitud a /api/calculadoras/${calculatorId}`); // Depuración
+      const response = await fetch(`/api/calculadoras/${calculatorId}`);
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Error en la respuesta del servidor: ${response.status} ${response.statusText}`, errorText);
+        throw new Error(`Error en la respuesta del servidor: ${response.status} ${response.statusText}`);
+      }
+      const data = await response.json();
+      console.log('Datos de la configuración recibidos del servidor:', data); // Depuración
+      setSelectedCalculatorDetails(data); // Actualizar el estado con los detalles de la configuración
+      setShowCalculadoraEdit(true); // Mostrar el modal de edición
+    } catch (error) {
+      console.error('Error al cargar los detalles de la configuración:', error);
+    }
+  };
+
+  const fetchQuoteDetails = async (quoteId) => {
+    try {
+      console.log(`Realizando solicitud a /api/cotizaciones/${quoteId}`); // Depuración
+      const response = await fetch(`/api/cotizaciones/${quoteId}`);
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Error en la respuesta del servidor: ${response.status} ${response.statusText}`, errorText);
+        throw new Error(`Error en la respuesta del servidor: ${response.status} ${response.statusText}`);
+      }
+      const data = await response.json();
+      console.log('Datos de la cotización recibidos del servidor:', data); // Depuración
+      setSelectedQuoteDetails(data); // Actualizar el estado con los detalles de la cotización
+      setShowQuoteRequest(true); // Mostrar el modal de edición
+    } catch (error) {
+      console.error('Error al cargar los detalles de la cotización:', error);
+    }
+  };
+
   useEffect(() => {
     if (activeTab === 'printer') {
       fetchPrinters(); // Consultar las impresoras al cambiar a la pestaña "Impresoras"
@@ -175,13 +215,29 @@ const Home = () => {
   const handleShowCalculadoraAdd = () => setShowCalculadoraAdd(true); // Mostrar agregar calculadora
   const handleCloseCalculadoraAdd = () => setShowCalculadoraAdd(false); // Cerrar agregar calculadora
 
-  const handleShowCalculadoraEdit = () => setShowCalculadoraEdit(true); // Mostrar editar calculadora
+  const handleShowCalculadoraEdit = () => {
+    if (selectedCalculatorId) {
+      fetchCalculatorDetails(selectedCalculatorId); // Consultar los detalles de la configuración seleccionada
+    } else {
+      alert('Por favor selecciona una configuración.');
+    }
+  };
+
   const handleCloseCalculadoraEdit = () => setShowCalculadoraEdit(false); // Cerrar editar calculadora
 
   const handleQuoteSelection = (event) => {
     const selectedId = event.target.value;
     const quote = quotes.find((q) => q.id === parseInt(selectedId, 10));
     setSelectedQuote(quote);
+    setSelectedQuoteId(selectedId);
+  };
+
+  const handleShowQuoteEdit = () => {
+    if (selectedQuoteId) {
+      fetchQuoteDetails(selectedQuoteId); // Consultar los detalles de la cotización seleccionada
+    } else {
+      alert('Por favor selecciona una cotización.');
+    }
   };
 
   const renderContent = () => {
@@ -271,7 +327,7 @@ const Home = () => {
                 </select>
               </div>
               <div className="d-flex justify-content-between mt-2">
-                <button type="button" className="btn btn-primary">
+                <button type="button" className="btn btn-primary" onClick={handleShowQuoteEdit}>
                   Editar
                 </button>
                 <button type="button" className="btn btn-success" onClick={handleShowQuoteRequest}>
@@ -288,7 +344,12 @@ const Home = () => {
             <form>
               <div className="form-group">
                 <label htmlFor="calculatorSelect">Selecciona una Configuración</label>
-                <select className="form-control" id="calculatorSelect">
+                <select
+                  className="form-control"
+                  id="calculatorSelect"
+                  onChange={(e) => setSelectedCalculatorId(e.target.value)}
+                  value={selectedCalculatorId || ''}
+                >
                   <option value="" disabled>
                     -- Selecciona una configuración --
                   </option>
@@ -362,7 +423,20 @@ const Home = () => {
         />
       )}
       {showConsumableModal && <Consumable showModal={showConsumableModal} handleClose={handleCloseConsumableModal} />}
-      {showQuoteRequest && <QuoteRequest showModal={showQuoteRequest} handleClose={handleCloseQuoteRequest} />}
+      {showQuoteRequest && (
+        <QuoteRequest
+          showModal={showQuoteRequest}
+          handleClose={handleCloseQuoteRequest}
+        />
+      )}
+      {showQuoteRequest && selectedQuoteDetails && (
+        <QuoteView
+          showModal={showQuoteRequest}
+          handleClose={handleCloseQuoteRequest}
+          mode="edit"
+          quoteData={selectedQuoteDetails} // Pasar los detalles de la cotización al modal
+        />
+      )}
       {showCalculadoraAdd && (
         <CalculadoraModal
           showModal={showCalculadoraAdd}
@@ -370,11 +444,12 @@ const Home = () => {
           mode="add"
         />
       )}
-      {showCalculadoraEdit && (
+      {showCalculadoraEdit && selectedCalculatorDetails && (
         <CalculadoraModal
           showModal={showCalculadoraEdit}
           handleClose={handleCloseCalculadoraEdit}
           mode="edit"
+          calculatorData={selectedCalculatorDetails} // Pasar los detalles de la configuración al modal
         />
       )}
     </div>

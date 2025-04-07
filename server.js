@@ -102,6 +102,47 @@ app.get('/api/calculadoras', async (req, res) => {
   }
 });
 
+// Ruta para obtener los detalles de una configuración específica
+app.get('/api/calculadoras/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const configuracion = await prisma.configuracionCalculadora.findUnique({
+      where: { id: parseInt(id, 10) },
+    });
+    if (!configuracion) {
+      return res.status(404).json({ error: 'Configuración no encontrada' });
+    }
+    res.json(configuracion);
+  } catch (error) {
+    console.error('Error al obtener los detalles de la configuración:', error);
+    res.status(500).json({ error: 'Error al obtener los detalles de la configuración' });
+  }
+});
+
+// Ruta para actualizar una configuración existente
+app.put('/api/calculadoras/:id', async (req, res) => {
+  const { id } = req.params;
+  const { utilizablesId, impresoraId, costoPorTiempo, costoDiseno, costoPostprocesado, costoMarketingEntrega } = req.body;
+
+  try {
+    const configuracion = await prisma.configuracionCalculadora.update({
+      where: { id: parseInt(id, 10) },
+      data: {
+        utilizablesId: parseInt(utilizablesId, 10),
+        impresoraId: parseInt(impresoraId, 10),
+        costoPorTiempo: parseFloat(costoPorTiempo),
+        costoDiseno: parseFloat(costoDiseno),
+        costoPostprocesado: parseFloat(costoPostprocesado),
+        costoMarketingEntrega: parseFloat(costoMarketingEntrega),
+      },
+    });
+    res.json(configuracion);
+  } catch (error) {
+    console.error('Error al actualizar la configuración:', error);
+    res.status(500).json({ error: 'Error al actualizar la configuración' });
+  }
+});
+
 // Ruta para registrar una nueva impresora
 app.post('/api/impresoras', async (req, res) => {
   console.log('Solicitud recibida en /api/impresoras:', req.body);
@@ -275,6 +316,52 @@ app.post('/api/cotizaciones', async (req, res) => {
   } catch (error) {
     console.error('Error al registrar la cotización:', error);
     res.status(500).json({ error: 'Error al registrar la cotización. Verifica el modelo en schema.prisma y las migraciones.' });
+  }
+});
+
+// Ruta para obtener los detalles de una cotización específica
+app.get('/api/cotizaciones/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const cotizacion = await prisma.cotizacion.findUnique({
+      where: { id: parseInt(id, 10) },
+    });
+    if (!cotizacion) {
+      return res.status(404).json({ error: 'Cotización no encontrada' });
+    }
+    res.json(cotizacion);
+  } catch (error) {
+    console.error('Error al obtener los detalles de la cotización:', error);
+    res.status(500).json({ error: 'Error al obtener los detalles de la cotización' });
+  }
+});
+
+// Ruta para actualizar una cotización existente
+app.put('/api/cotizaciones/:id', async (req, res) => {
+  const { id } = req.params;
+  const { nombre, link, presupuesto, tamano, DescripcionCliente, tipo, diseno, postprocesado, marketingEntrega, comentarios, idConfiguracionCalculadora } = req.body;
+
+  try {
+    const cotizacion = await prisma.cotizacion.update({
+      where: { id: parseInt(id, 10) },
+      data: {
+        nombre,
+        link,
+        presupuesto: parseFloat(presupuesto),
+        tamano,
+        DescripcionCliente,
+        tipo,
+        diseno,
+        postprocesado,
+        marketingEntrega,
+        comentarios,
+        idConfiguracionCalculadora,
+      },
+    });
+    res.json(cotizacion);
+  } catch (error) {
+    console.error('Error al actualizar la cotización:', error);
+    res.status(500).json({ error: 'Error al actualizar la cotización' });
   }
 });
 

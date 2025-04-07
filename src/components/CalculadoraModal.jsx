@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 
-const CalculadoraModal = ({ showModal, handleClose, mode }) => {
+const CalculadoraModal = ({ showModal, handleClose, mode, calculatorData }) => {
   const [formData, setFormData] = useState({
     utilizablesId: '',
     impresoraId: '',
@@ -13,6 +13,19 @@ const CalculadoraModal = ({ showModal, handleClose, mode }) => {
 
   const [printers, setPrinters] = useState([]); // Estado para almacenar las impresoras
   const [consumables, setConsumables] = useState([]); // Estado para almacenar los consumibles
+
+  useEffect(() => {
+    if (calculatorData && mode === 'edit') {
+      setFormData({
+        utilizablesId: calculatorData.utilizablesId.toString(),
+        impresoraId: calculatorData.impresoraId.toString(),
+        costoPorTiempo: calculatorData.costoPorTiempo.toString(),
+        costoDiseno: calculatorData.costoDiseno.toString(),
+        costoPostprocesado: calculatorData.costoPostprocesado.toString(),
+        costoMarketingEntrega: calculatorData.costoMarketingEntrega.toString(),
+      });
+    }
+  }, [calculatorData, mode]);
 
   const fetchPrinters = async () => {
     try {
@@ -64,8 +77,11 @@ const CalculadoraModal = ({ showModal, handleClose, mode }) => {
     console.log('Datos enviados:', payload);
 
     try {
-      const response = await fetch('/api/calculadoras', {
-        method: 'POST',
+      const url = mode === 'add' ? '/api/calculadoras' : `/api/calculadoras/${calculatorData.id}`;
+      const method = mode === 'add' ? 'POST' : 'PUT';
+
+      const response = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json',
         },
@@ -75,16 +91,16 @@ const CalculadoraModal = ({ showModal, handleClose, mode }) => {
       if (response.ok) {
         const data = await response.json();
         console.log('Respuesta del servidor:', data);
-        alert('Configuración registrada exitosamente');
+        alert(mode === 'add' ? 'Configuración registrada exitosamente' : 'Configuración actualizada exitosamente');
         handleClose();
       } else {
         const errorData = await response.json();
         console.error('Error del servidor:', errorData);
-        alert(`Error al registrar la configuración: ${errorData.error || 'Error desconocido'}`);
+        alert(`Error al ${mode === 'add' ? 'registrar' : 'actualizar'} la configuración: ${errorData.error || 'Error desconocido'}`);
       }
     } catch (error) {
       console.error('Error en la solicitud:', error);
-      alert('Error al registrar la configuración. Verifica la conexión al servidor.');
+      alert(`Error al ${mode === 'add' ? 'registrar' : 'actualizar'} la configuración. Verifica la conexión al servidor.`);
     }
   };
 
