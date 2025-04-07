@@ -6,7 +6,7 @@ const ConsumablesDetails = ({ showModal, handleClose, selectedConsumableId }) =>
     nombre: '',
     cantidad: '',
     costoDeCompra: '',
-    tipo: '',
+    tipo: 'Filamento', // Valor predeterminado
     material: '',
   });
 
@@ -129,26 +129,37 @@ const ConsumablesDetails = ({ showModal, handleClose, selectedConsumableId }) =>
               />
             </div>
             <div className="form-group mt-3">
-              <label htmlFor="costoDeCompra">Costo de Compra</label>
-              <input
-                type="number"
-                className="form-control"
-                id="costoDeCompra"
-                name="costoDeCompra"
-                value={consumableData.costoDeCompra}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="form-group mt-3">
-              <label htmlFor="tipo">Tipo</label>
-              <input
-                type="text"
-                className="form-control"
-                id="tipo"
-                name="tipo"
-                value={consumableData.tipo}
-                onChange={handleChange}
-              />
+              <label>Tipo de Consumible</label>
+              <div>
+                <div className="form-check">
+                  <input
+                    className="form-check-input"
+                    type="radio"
+                    id="tipoFilamento"
+                    name="tipo"
+                    value="Filamento"
+                    checked={consumableData.tipo === 'Filamento'}
+                    onChange={handleChange}
+                  />
+                  <label className="form-check-label" htmlFor="tipoFilamento">
+                    Filamento
+                  </label>
+                </div>
+                <div className="form-check">
+                  <input
+                    className="form-check-input"
+                    type="radio"
+                    id="tipoResinaUV"
+                    name="tipo"
+                    value="Resina UV"
+                    checked={consumableData.tipo === 'Resina UV'}
+                    onChange={handleChange}
+                  />
+                  <label className="form-check-label" htmlFor="tipoResinaUV">
+                    Resina UV
+                  </label>
+                </div>
+              </div>
             </div>
             <div className="form-group mt-3">
               <label htmlFor="material">Material</label>
@@ -158,6 +169,17 @@ const ConsumablesDetails = ({ showModal, handleClose, selectedConsumableId }) =>
                 id="material"
                 name="material"
                 value={consumableData.material}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="form-group mt-3">
+              <label htmlFor="costoDeCompra">Costo de Compra</label>
+              <input
+                type="number"
+                className="form-control"
+                id="costoDeCompra"
+                name="costoDeCompra"
+                value={consumableData.costoDeCompra}
                 onChange={handleChange}
               />
             </div>

@@ -135,7 +135,6 @@ const Home = () => {
       const data = await response.json();
       console.log('Datos de la configuración recibidos del servidor:', data); // Depuración
       setSelectedCalculatorDetails(data); // Actualizar el estado con los detalles de la configuración
-      setShowCalculadoraEdit(true); // Mostrar el modal de edición
     } catch (error) {
       console.error('Error al cargar los detalles de la configuración:', error);
     }
@@ -222,6 +221,7 @@ const Home = () => {
   const handleShowCalculadoraEdit = () => {
     if (selectedCalculatorId) {
       fetchCalculatorDetails(selectedCalculatorId); // Consultar los detalles de la configuración seleccionada
+      setShowCalculadoraEdit(true); // Mostrar el modal de edición
     } else {
       alert('Por favor selecciona una configuración.');
     }

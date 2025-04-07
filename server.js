@@ -136,10 +136,10 @@ app.put('/api/calculadoras/:id', async (req, res) => {
         costoMarketingEntrega: parseFloat(costoMarketingEntrega),
       },
     });
-    res.json(configuracion);
+    res.json({ message: 'Configuración de calculadora actualizada exitosamente.', configuracion });
   } catch (error) {
-    console.error('Error al actualizar la configuración:', error);
-    res.status(500).json({ error: 'Error al actualizar la configuración' });
+    console.error('Error al actualizar la configuración de calculadora:', error);
+    res.status(500).json({ error: 'Error al actualizar la configuración de calculadora.' });
   }
 });
 
@@ -220,6 +220,28 @@ app.get('/api/impresoras', async (req, res) => {
   } catch (error) {
     console.error('Error al obtener las impresoras:', error);
     res.status(500).json({ error: 'Error al obtener las impresoras' });
+  }
+});
+
+// Ruta para actualizar una impresora
+app.put('/api/impresoras/:id', async (req, res) => {
+  const { id } = req.params;
+  const { nombre, tipo, imagen, velocidad } = req.body;
+
+  try {
+    const impresora = await prisma.impresora.update({
+      where: { id: parseInt(id, 10) },
+      data: {
+        nombre,
+        tipo,
+        imagen,
+        velocidad: parseFloat(velocidad),
+      },
+    });
+    res.json({ message: 'Impresora actualizada exitosamente.', impresora });
+  } catch (error) {
+    console.error('Error al actualizar la impresora:', error);
+    res.status(500).json({ error: 'Error al actualizar la impresora.' });
   }
 });
 
@@ -310,6 +332,29 @@ app.get('/api/utilizables', async (req, res) => {
   }
 });
 
+// Ruta para actualizar un consumible
+app.put('/api/utilizables/:id', async (req, res) => {
+  const { id } = req.params;
+  const { nombre, cantidad, costoDeCompra, tipo, material } = req.body;
+
+  try {
+    const consumible = await prisma.utilizables.update({
+      where: { id: parseInt(id, 10) },
+      data: {
+        nombre,
+        cantidad: parseFloat(cantidad),
+        costoDeCompra: costoDeCompra.toString(), // Conversión a String
+        tipo,
+        material,
+      },
+    });
+    res.json({ message: 'Consumible actualizado exitosamente.', consumible });
+  } catch (error) {
+    console.error('Error al actualizar el consumible:', error);
+    res.status(500).json({ error: 'Error al actualizar el consumible.' });
+  }
+});
+
 // Ruta para eliminar un consumible
 app.delete('/api/utilizables/:id', async (req, res) => {
   const { id } = req.params;
@@ -397,13 +442,13 @@ app.put('/api/cotizaciones/:id', async (req, res) => {
         postprocesado,
         marketingEntrega,
         comentarios,
-        idConfiguracionCalculadora,
+        idConfiguracionCalculadora: idConfiguracionCalculadora ? parseInt(idConfiguracionCalculadora, 10) : null, // Conversión a Int o Null
       },
     });
-    res.json(cotizacion);
+    res.json({ message: 'Cotización actualizada exitosamente.', cotizacion });
   } catch (error) {
     console.error('Error al actualizar la cotización:', error);
-    res.status(500).json({ error: 'Error al actualizar la cotización' });
+    res.status(500).json({ error: 'Error al actualizar la cotización.' });
   }
 });
 
