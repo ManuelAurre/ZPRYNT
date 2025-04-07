@@ -23,6 +23,7 @@ const Home = () => {
   const [quotes, setQuotes] = useState([]); // Estado para almacenar todas las cotizaciones
   const [printers, setPrinters] = useState([]); // Estado para almacenar las impresoras
   const [consumables, setConsumables] = useState([]); // Estado para almacenar los consumibles
+  const [calculatorConfigs, setCalculatorConfigs] = useState([]); // Estado para almacenar las configuraciones de la calculadora
 
   const fetchQuotes = async () => {
     try {
@@ -75,10 +76,29 @@ const Home = () => {
     }
   };
 
+  const fetchCalculatorConfigs = async () => {
+    try {
+      console.log('Realizando solicitud a /api/calculadoras'); // Confirmar que se está llamando a la API
+      const response = await fetch(`/api/calculadoras`);
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Error en la respuesta del servidor: ${response.status} ${response.statusText}`, errorText);
+        throw new Error(`Error en la respuesta del servidor: ${response.status} ${response.statusText}`);
+      }
+      const data = await response.json();
+      console.log('Datos recibidos del servidor:', data); // Verificar los datos recibidos
+      setCalculatorConfigs(data); // Actualizar el estado con las configuraciones
+    } catch (error) {
+      console.error('Error al cargar las configuraciones de la calculadora:', error);
+    }
+  };
+
   useEffect(() => {
     if (activeTab === 'printer') {
       fetchPrinters(); // Consultar las impresoras al cambiar a la pestaña "Impresoras"
       fetchConsumables(); // Consultar los consumibles al cambiar a la pestaña "Impresoras"
+    } else if (activeTab === 'calculator') {
+      fetchCalculatorConfigs(); // Consultar las configuraciones al cambiar a la pestaña "Calculadora"
     }
   }, [activeTab]);
 
@@ -201,12 +221,16 @@ const Home = () => {
             <h3 className="mt-4">Calculadora</h3>
             <form>
               <div className="form-group">
-                <label htmlFor="calculatorSelect">Selecciona una Calculadora</label>
+                <label htmlFor="calculatorSelect">Selecciona una Configuración</label>
                 <select className="form-control" id="calculatorSelect">
-                  {/* Aquí se llenará dinámicamente con datos de la base de datos */}
-                  <option>Calculadora 1</option>
-                  <option>Calculadora 2</option>
-                  <option>Calculadora 3</option>
+                  <option value="" disabled>
+                    -- Selecciona una configuración --
+                  </option>
+                  {calculatorConfigs.map((config) => (
+                    <option key={config.id} value={config.id}>
+                      Configuración {config.id}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div className="d-flex justify-content-between mt-2">

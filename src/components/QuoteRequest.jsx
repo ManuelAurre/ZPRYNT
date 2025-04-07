@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 
 const QuoteRequest = ({ showModal, handleClose }) => {
@@ -16,11 +16,26 @@ const QuoteRequest = ({ showModal, handleClose }) => {
         idConfiguracionCalculadora: '',
     });
 
-    const configuracionesDummy = [
-        { id: 1, nombre: 'Configuración 1' },
-        { id: 2, nombre: 'Configuración 2' },
-        { id: 3, nombre: 'Configuración 3' },
-    ];
+    const [calculatorConfigs, setCalculatorConfigs] = useState([]); // Estado para almacenar las configuraciones de la calculadora
+
+    const fetchCalculatorConfigs = async () => {
+        try {
+            console.log('Realizando solicitud a /api/calculadoras'); // Confirmar que se está llamando a la API
+            const response = await fetch(`/api/calculadoras`);
+            if (!response.ok) throw new Error('Error al obtener las configuraciones de la calculadora');
+            const data = await response.json();
+            console.log('Datos recibidos del servidor:', data); // Verificar los datos recibidos
+            setCalculatorConfigs(data); // Actualizar el estado con las configuraciones
+        } catch (error) {
+            console.error('Error al cargar las configuraciones de la calculadora:', error);
+        }
+    };
+
+    useEffect(() => {
+        if (showModal) {
+            fetchCalculatorConfigs(); // Consultar las configuraciones al abrir el modal
+        }
+    }, [showModal]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -243,8 +258,10 @@ const QuoteRequest = ({ showModal, handleClose }) => {
                             onChange={handleChange}
                         >
                             <option value="" disabled>-- Selecciona una configuración --</option>
-                            {configuracionesDummy.map((config) => (
-                                <option key={config.id} value={config.id}>{config.nombre}</option>
+                            {calculatorConfigs.map((config) => (
+                                <option key={config.id} value={config.id}>
+                                    Configuración {config.id}
+                                </option>
                             ))}
                         </select>
                     </div>

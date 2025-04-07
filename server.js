@@ -84,6 +84,27 @@ app.post('/api/calculadoras', async (req, res) => {
   }
 });
 
+// Ruta para obtener todas las configuraciones de la calculadora
+app.get('/api/calculadoras', async (req, res) => {
+  try {
+    console.log('Consulta recibida en /api/calculadoras'); // Confirmar que la ruta está siendo llamada
+    const configuraciones = await prisma.configuracionCalculadora.findMany({
+      select: {
+        id: true,
+        costoPorTiempo: true,
+        costoDiseno: true,
+        costoPostprocesado: true,
+        costoMarketingEntrega: true,
+      },
+    });
+    console.log('Datos obtenidos de la base de datos:', configuraciones); // Verificar los datos obtenidos
+    res.json(configuraciones);
+  } catch (error) {
+    console.error('Error al obtener las configuraciones de la calculadora:', error);
+    res.status(500).json({ error: 'Error al obtener las configuraciones de la calculadora' });
+  }
+});
+
 // Ruta para registrar una nueva impresora
 app.post('/api/impresoras', async (req, res) => {
   console.log('Solicitud recibida en /api/impresoras:', req.body);
