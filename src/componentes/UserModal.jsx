@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import '../styles/componentes.css';
 import '../styles/Modal.css';
 
-const UserModal = ({ showModal, handleClose, userId, onUserUpdated }) => {
+const UserModal = ({ showModal, handleClose, userId, onUserUpdated, puestos }) => {
   const [userData, setUserData] = useState(null);
   const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '', tipo: '', edad: '' });
   const [passwordError, setPasswordError] = useState('');
@@ -88,15 +88,21 @@ const UserModal = ({ showModal, handleClose, userId, onUserUpdated }) => {
               />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <label style={{ textAlign: 'left', display: 'block' }}>Tipo: </label>
-              <input
-                className="form-control"
+              <label style={{ textAlign: 'left', display: 'block' }}>Tipo (Puesto): </label>
+              <select
+                id="tipo"
                 name="tipo"
+                className="form-control"
                 value={form.tipo}
                 onChange={handleChange}
                 required
-                style={{ width: '100px' }}
-              />
+                style={{ width: '150px' }}
+              >
+                <option value="">Seleccione un puesto</option>
+                {puestos && puestos.map(p => (
+                  <option key={p.id} value={p.id}>{p.nombre}</option>
+                ))}
+              </select>
             </div>
           </div>
           <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>

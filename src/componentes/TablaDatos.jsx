@@ -1,6 +1,9 @@
 import React from 'react';
 
-const TablaDatos = ({ columnas, datos, onDelete, onEdit, tabla }) => {
+const TablaDatos = ({ columnas, datos, onDelete, onEdit, tabla, renderCell }) => {
+  // Depuración: muestra los datos y columnas que recibe la tabla
+  console.log('TablaDatos columnas:', columnas);
+  console.log('TablaDatos datos:', datos);
   return (
     <div className="table-responsive">
       <table className="table table-bordered table-sm">
@@ -17,7 +20,9 @@ const TablaDatos = ({ columnas, datos, onDelete, onEdit, tabla }) => {
             datos.map((fila, idx) => (
               <tr key={fila.id || idx}>
                 {columnas.map(col => (
-                  <td key={col.key}>{fila[col.key]}</td>
+                  <td key={col.key}>
+                    {renderCell ? renderCell(col, fila) : fila[col.key]}
+                  </td>
                 ))}
                 <td>
                   {/* Icono de editar (lápiz moderno, morado) */}

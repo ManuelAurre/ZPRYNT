@@ -8,7 +8,8 @@ const ConsumableModal = ({ showModal, handleClose, mode = 'add', consumableData,
     cantidadActual: '',
     tipo: '',
     material: '',
-    costoDeCompra: ''
+    costoDeCompra: '',
+    costoDeVenta: ''
   });
 
   useEffect(() => {
@@ -19,10 +20,11 @@ const ConsumableModal = ({ showModal, handleClose, mode = 'add', consumableData,
         cantidadActual: consumableData.cantidadActual ? String(consumableData.cantidadActual) : '',
         tipo: consumableData.tipo || '',
         material: consumableData.material || '',
-        costoDeCompra: consumableData.costoDeCompra || ''
+        costoDeCompra: consumableData.costoDeCompra || '',
+        costoDeVenta: consumableData.costoDeVenta || ''
       });
     } else if (mode === 'add') {
-      setForm({ nombre: '', cantidad: '', cantidadActual: '', tipo: '', material: '', costoDeCompra: '' });
+      setForm({ nombre: '', cantidad: '', cantidadActual: '', tipo: '', material: '', costoDeCompra: '', costoDeVenta: '' });
     }
   }, [mode, consumableData, showModal]);
 
@@ -123,6 +125,16 @@ const ConsumableModal = ({ showModal, handleClose, mode = 'add', consumableData,
               className="form-control"
               name="costoDeCompra"
               value={form.costoDeCompra}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div className="form-group mt-2">
+            <label style={{ textAlign: 'left', display: 'block' }}>Costo de Venta: </label>
+            <input
+              className="form-control"
+              name="costoDeVenta"
+              value={form.costoDeVenta}
               onChange={handleChange}
               required
             />

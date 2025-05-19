@@ -14,6 +14,8 @@ import PrinterModal from '../componentes/PrinterModal'; // Importar el nuevo mod
 import ConsumableModal from '../componentes/ConsumableModal'; // Importar el modal de consumibles
 import QuoteModal from '../componentes/QuoteModal'; // Importar el modal de cotizaciones
 import CalculadoraConfigModal from '../componentes/CalculadoraConfigModal'; // Importar el modal de configuración de calculadora
+import PuestoModal from '../componentes/PuestoModal'; // Importar el modal de puestos
+import VentaViewModal from '../componentes/VentaViewModal'; // Importa el nuevo modal
 import '../styles/Home.css'; // Import the new CSS file
 
 const Home = () => {
@@ -54,6 +56,13 @@ const Home = () => {
   const [showCalculadoraConfigModal, setShowCalculadoraConfigModal] = useState(false); // Estado para mostrar el modal de configuración de calculadora
   const [calculadoraConfigModalMode, setCalculadoraConfigModalMode] = useState('add'); // Modo del modal de configuración de calculadora
   const [calculadoraConfigEditData, setCalculadoraConfigEditData] = useState(null); // Datos para editar configuración de calculadora
+  const [puestos, setPuestos] = useState([]);
+  const [showPuestoModal, setShowPuestoModal] = useState(false);
+  const [puestoModalMode, setPuestoModalMode] = useState('add');
+  const [puestoEditData, setPuestoEditData] = useState(null);
+  const [ventas, setVentas] = useState([]); // Estado para almacenar las ventas
+  const [showVentaView, setShowVentaView] = useState(false);
+  const [ventaViewData, setVentaViewData] = useState(null);
 
   const getTokenFromCookie = () => {
     const match = document.cookie.match(/(^| )token=([^;]+)/);
@@ -91,7 +100,15 @@ const Home = () => {
       }
       const data = await response.json();
       console.log('Datos recibidos del servidor:', data); // Verificar los datos recibidos
-      setQuotes(data); // Actualizar el estado con las cotizaciones
+      // Mapeo para asegurar que las claves sean las esperadas por la tabla, pero sin sobrescribir valores válidos
+      const mappedData = data.map(q => ({
+        id: q.id,
+        nombre: q.nombre ?? q.name ?? '',
+        link: q.link ?? q.url ?? '',
+        presupuesto: q.presupuesto ?? '',
+        estatus: q.estatus ?? '',
+      }));
+      setQuotes(mappedData); // Actualizar el estado con las cotizaciones
     } catch (error) {
       console.error('Error al cargar las cotizaciones:', error);
     }
@@ -222,6 +239,36 @@ const Home = () => {
     }
   };
 
+  const fetchPuestos = async () => {
+    try {
+      const response = await fetchWithAuth('/api/puestos');
+      if (!response.ok) throw new Error('Error al obtener los puestos');
+      const data = await response.json();
+      setPuestos(data);
+    } catch (error) {
+      console.error('Error al cargar los puestos:', error);
+    }
+  };
+
+  const fetchVentas = async () => {
+    try {
+      const response = await fetchWithAuth('/api/ventas');
+      if (!response.ok) throw new Error('Error al obtener las ventas');
+      const data = await response.json();
+      setVentas(data);
+    } catch (error) {
+      console.error('Error al cargar las ventas:', error);
+    }
+  };
+
+  const handleViewVenta = async (id) => {
+    const res = await fetch(`/api/ventas`);
+    const ventas = await res.json();
+    const venta = ventas.find(v => v.id === id);
+    setVentaViewData(venta);
+    setShowVentaView(true);
+  };
+
   useEffect(() => {
     if (activeTab === 'printer') {
       fetchPrinters(); // Consultar las impresoras al cambiar a la pestaña "Impresoras"
@@ -229,8 +276,16 @@ const Home = () => {
       fetchConsumables(); // Consultar los consumibles al cambiar a la pestaña "Consumibles"
     } else if (activeTab === 'calculator') {
       fetchCalculatorConfigs(); // Consultar las configuraciones al cambiar a la pestaña "Calculadora"
+    } else if (activeTab === 'puestos') {
+      fetchPuestos(); // Consultar los puestos al cambiar a la pestaña "Puestos"
+    } else if (activeTab === 'ventas') {
+      fetchVentas(); // Consultar las ventas al cambiar a la pestaña "Ventas"
     }
   }, [activeTab]);
+
+  useEffect(() => {
+    fetchPuestos();
+  }, []);
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
@@ -379,29 +434,119 @@ const Home = () => {
     setDeleteInfo({ id: null, tabla: null });
   };
 
+  const handleShowPuestoModal = () => {
+    setPuestoModalMode('add');
+    setPuestoEditData(null);
+    setShowPuestoModal(true);
+  };
+
+  const handleEditPuesto = async (id) => {
+    const res = await fetch(`/api/puestos/${id}`);
+    const data = await res.json();
+    setPuestoModalMode('edit');
+    setPuestoEditData(data);
+    setShowPuestoModal(true);
+  };
+
+  const getUtilizableNombre = (id) => {
+    // Asegura que id y x.id sean números para la comparación
+    const u = consumables.find(x => Number(x.id) === Number(id));
+    return u ? u.nombre : id;
+  };
+
+  const getImpresoraNombre = (id) => {
+    const i = printers.find(x => x.id === id);
+    return i ? i.nombre : id;
+  };
+
+  const getPuestoNombre = (id) => {
+    const p = puestos.find(x => String(x.id) === String(id));
+    return p ? p.nombre : id;
+  };
+
   const columnasTablas = {
     impresoras: [
       { key: 'id', label: 'ID' },
       { key: 'nombre', label: 'Nombre' },
+      { key: 'tipo', label: 'Tipo' },
+      { key: 'costoPorHora', label: 'Costo Por Hora' },
+      { key: 'dimensiones', label: 'Dimensiones' },
     ],
     consumibles: [
       { key: 'id', label: 'ID' },
       { key: 'nombre', label: 'Nombre' },
+      { key: 'material', label: 'Material' },
+      { key: 'cantidad', label: 'Cantidad Total' },
+      { key: 'cantidadActual', label: 'Cantidad Actual' },
+      { key: 'costoDeCompra', label: 'Costo de Compra' },
+      { key: 'costoDeVenta', label: 'Venta por Gramo' },
     ],
     cotizaciones: [
       { key: 'id', label: 'ID' },
       { key: 'nombre', label: 'Nombre' },
+      { key: 'link', label: 'Link' },
+      { key: 'presupuesto', label: 'Presupuesto' },
+      { key: 'estatus', label: 'Estatus' },
     ],
     calculadoras: [
       { key: 'id', label: 'ID' },
+      { key: 'nombre', label: 'Nombre' },
+      { key: 'utilizables', label: 'Consumibles' },
+      { key: 'impresora', label: 'Impresora' },
     ],
   };
 
+  const columnasPuestos = [
+    { key: 'id', label: 'ID' },
+    { key: 'nombre', label: 'Nombre' },
+    { key: 'descripcion', label: 'Descripción' },
+  ];
+
+  const columnasVentas = [
+    { key: 'id', label: 'ID' },
+    { key: 'nombre', label: 'Nombre' },
+    { key: 'costoTotal', label: 'Costo total' },
+  ];
+
+  const renderLinkCell = (col, fila) => {
+    if (col.key === 'link' && fila.link) {
+      return (
+        <a href={fila.link} target="_blank" rel="noopener noreferrer">
+          {fila.link}
+        </a>
+      );
+    }
+    return fila[col.key];
+  };
+
+  // Mapea calculatorConfigs para mostrar el nombre del consumible en la columna 'utilizables'
+  const calculatorConfigsWithNames = calculatorConfigs.map(cfg => ({
+    ...cfg,
+    utilizables: getUtilizableNombre(cfg.utilizablesId),
+    impresora: getImpresoraNombre(cfg.impresoraId),
+  }));
+
+  const renderCalculadoraCell = (col, fila) => {
+    if (col.key === 'nombre') {
+      return `Calculadora ${fila.id}`;
+    }
+    // Aquí, utilizables ya es el nombre, no el id
+    return fila[col.key];
+  };
+
   const columnasUsuarios = [
-    { key: 'name', label: 'Nombre' }, // Cambia 'nombre' por 'name'
+    { key: 'id', label: 'ID' }, // Mostrar el ID
+    { key: 'name', label: 'Nombre' },
     { key: 'email', label: 'Email' },
     { key: 'tipo', label: 'Tipo' },
   ];
+
+  const renderUsuarioCell = (col, fila) => {
+    if (col.key === 'tipo') {
+      return getPuestoNombre(fila.tipo);
+    }
+    return fila[col.key];
+  };
 
   const datosTabla = (() => {
     switch (tablaSeleccionada) {
@@ -431,6 +576,27 @@ const Home = () => {
               onDelete={handleDeleteClick}
               onEdit={handleEditClick}
               tabla="users"
+              renderCell={renderUsuarioCell}
+            />
+          </div>
+        );
+      case 'puestos':
+        return (
+          <div>
+            <h3 className="mt-4">Puestos</h3>
+            <div className="d-flex justify-content-start mb-2">
+              <button type="button" className="btn-morado" onClick={handleShowPuestoModal}>
+                Agregar
+              </button>
+            </div>
+            <TablaDatos
+              columnas={columnasPuestos}
+              datos={puestos}
+              onDelete={handleDeleteClick}
+              onEdit={(_id, tabla) => {
+                if (tabla === 'puestos') handleEditPuesto(_id);
+              }}
+              tabla="puestos"
             />
           </div>
         );
@@ -475,7 +641,7 @@ const Home = () => {
           </div>
         );
       case 'quotes':
-        console.log('Renderizando cotizaciones:', quotes); // Confirmar los datos que llegan al select
+        console.log('Renderizando cotizaciones (quotes):', quotes); // Confirmar los datos que llegan a la tabla
         return (
           <div>
             <h3 className="mt-4">Cotizaciones</h3>
@@ -492,6 +658,7 @@ const Home = () => {
                 if (tabla === 'cotizaciones') handleEditQuote(_id);
               }}
               tabla="cotizaciones"
+              renderCell={renderLinkCell}
             />
           </div>
         );
@@ -506,12 +673,25 @@ const Home = () => {
             </div>
             <TablaDatos
               columnas={columnasTablas.calculadoras}
-              datos={calculatorConfigs}
+              datos={calculatorConfigsWithNames}
               onDelete={handleDeleteClick}
               onEdit={(_id, tabla) => {
                 if (tabla === 'calculadoras') handleEditCalculadoraConfig(_id);
               }}
               tabla="calculadoras"
+              renderCell={renderCalculadoraCell}
+            />
+          </div>
+        );
+      case 'ventas':
+        return (
+          <div>
+            <h3 className="mt-4">Ventas</h3>
+            <TablaDatos
+              columnas={columnasVentas}
+              datos={ventas}
+              tabla="ventas"
+              onEdit={handleViewVenta}
             />
           </div>
         );
@@ -555,6 +735,20 @@ const Home = () => {
                 }}
               >
                 Personal Participante
+              </a>
+            </li>
+            <li className="nav-item">
+              <a
+                className={`nav-link ${activeTab === 'puestos' ? 'active' : ''}`}
+                id="puestos-tab"
+                data-bs-toggle="tab"
+                href="#puestos"
+                role="tab"
+                aria-controls="puestos"
+                aria-selected={activeTab === 'puestos'}
+                onClick={() => setActiveTab('puestos')}
+              >
+                Puestos
               </a>
             </li>
             <li className="nav-item">
@@ -611,6 +805,20 @@ const Home = () => {
                 onClick={() => handleTabChange('calculator')}
               >
                 Calculadora
+              </a>
+            </li>
+            <li className="nav-item">
+              <a
+                className={`nav-link ${activeTab === 'ventas' ? 'active' : ''}`}
+                id="ventas-tab"
+                data-bs-toggle="tab"
+                href="#ventas"
+                role="tab"
+                aria-controls="ventas"
+                aria-selected={activeTab === 'ventas'}
+                onClick={() => setActiveTab('ventas')}
+              >
+                Ventas
               </a>
             </li>
           </ul>
@@ -696,12 +904,27 @@ const Home = () => {
         handleClose={() => setShowUserModal(false)}
         userId={selectedUserId}
         onUserUpdated={fetchUsuarios}
+        puestos={puestos}
+      />
+      <PuestoModal
+        showModal={showPuestoModal}
+        handleClose={() => setShowPuestoModal(false)}
+        mode={puestoModalMode}
+        puestoData={puestoEditData}
+        onSaved={fetchPuestos}
       />
       <Boorado
         show={showBoorado}
         onAccept={handleAcceptDelete}
         onCancel={handleCancelDelete}
       />
+      {showVentaView && ventaViewData && (
+        <VentaViewModal
+          show={showVentaView}
+          onHide={() => setShowVentaView(false)}
+          venta={ventaViewData}
+        />
+      )}
     </div>
   );
 };

@@ -121,25 +121,25 @@ app.get('/api/calculadoras/:id', async (req, res) => {
 
 // Ruta para actualizar una configuración existente
 app.put('/api/calculadoras/:id', async (req, res) => {
-  const { id } = req.params;
   const { utilizablesId, impresoraId, costoPorTiempo, costoDiseno, costoPostprocesado, costoMarketingEntrega } = req.body;
-
   try {
     const configuracion = await prisma.configuracionCalculadora.update({
-      where: { id: parseInt(id, 10) },
-      data: {
-        utilizablesId: parseInt(utilizablesId, 10),
-        impresoraId: parseInt(impresoraId, 10),
-        costoPorTiempo: parseFloat(costoPorTiempo),
-        costoDiseno: parseFloat(costoDiseno),
-        costoPostprocesado: parseFloat(costoPostprocesado),
-        costoMarketingEntrega: parseFloat(costoMarketingEntrega),
+      where: {
+        id: Number(req.params.id)
       },
+      data: {
+        utilizablesId: Number(utilizablesId),
+        impresoraId: Number(impresoraId),
+        costoPorTiempo: Number(costoPorTiempo),
+        costoDiseno: Number(costoDiseno), // Aquí se guarda el ID del responsable de diseño
+        costoPostprocesado: Number(costoPostprocesado), // Aquí el de post procesado
+        costoMarketingEntrega: Number(costoMarketingEntrega), // Aquí el de marketing
+      }
     });
-    res.json({ message: 'Configuración de calculadora actualizada exitosamente.', configuracion });
+    res.json(configuracion);
   } catch (error) {
     console.error('Error al actualizar la configuración de calculadora:', error);
-    res.status(500).json({ error: 'Error al actualizar la configuración de calculadora.' });
+    res.status(500).json({ error: 'Error al actualizar la configuración de calculadora' });
   }
 });
 
@@ -175,7 +175,7 @@ app.post('/api/impresoras', async (req, res) => {
         tipo,
         imagen,
         velocidad: parseFloat(velocidad),
-        costoPorHora: parseInt(costoPorHora, 10),
+        costoPorHora: costoPorHora.toString(),
         dimensiones,
       },
     });
@@ -215,6 +215,9 @@ app.get('/api/impresoras', async (req, res) => {
       select: {
         id: true,
         nombre: true,
+        tipo: true,
+        costoPorHora: true,
+        dimensiones: true,
       },
     });
     console.log('Datos obtenidos de la base de datos:', impresoras); // Verificar los datos obtenidos
@@ -238,7 +241,7 @@ app.put('/api/impresoras/:id', async (req, res) => {
         tipo,
         imagen,
         velocidad: parseFloat(velocidad),
-        costoPorHora: costoPorHora ? parseInt(costoPorHora, 10) : undefined,
+        costoPorHora: costoPorHora !== undefined && costoPorHora !== null ? costoPorHora.toString() : undefined,
         dimensiones,
       },
     });
@@ -267,9 +270,9 @@ app.delete('/api/impresoras/:id', async (req, res) => {
 app.post('/api/utilizables', async (req, res) => {
   console.log('Solicitud recibida en /api/utilizables:', req.body);
 
-  const { nombre, cantidad, cantidadActual, tipo, material, costoDeCompra } = req.body;
+  const { nombre, cantidad, cantidadActual, tipo, material, costoDeCompra, costoDeVenta } = req.body;
 
-  if (!nombre || !cantidad || !tipo || !material || !costoDeCompra) {
+  if (!nombre || !cantidad || !tipo || !material || !costoDeCompra || !costoDeVenta) {
     console.error('Faltan campos obligatorios');
     return res.status(400).json({ error: 'Todos los campos son obligatorios.' });
   }
@@ -283,6 +286,7 @@ app.post('/api/utilizables', async (req, res) => {
         tipo,
         material,
         costoDeCompra,
+        costoDeVenta,
       },
     });
 
@@ -326,6 +330,11 @@ app.get('/api/utilizables', async (req, res) => {
       select: {
         id: true,
         nombre: true,
+        cantidad: true,
+        cantidadActual: true,
+        costoDeCompra: true,
+        costoDeVenta: true,
+        material: true,
       },
     });
     console.log('Datos obtenidos de la base de datos:', consumibles); // Verificar los datos obtenidos
@@ -339,7 +348,7 @@ app.get('/api/utilizables', async (req, res) => {
 // Ruta para actualizar un consumible
 app.put('/api/utilizables/:id', async (req, res) => {
   const { id } = req.params;
-  const { nombre, cantidad, costoDeCompra, tipo, material } = req.body;
+  const { nombre, cantidad, cantidadActual, costoDeCompra, costoDeVenta, tipo, material } = req.body;
 
   try {
     const consumible = await prisma.utilizables.update({
@@ -347,7 +356,9 @@ app.put('/api/utilizables/:id', async (req, res) => {
       data: {
         nombre,
         cantidad: parseFloat(cantidad),
-        costoDeCompra: costoDeCompra.toString(), // Conversión a String
+        cantidadActual: cantidadActual !== undefined && cantidadActual !== null ? parseFloat(cantidadActual) : undefined,
+        costoDeCompra: costoDeCompra.toString(),
+        costoDeVenta: costoDeVenta.toString(),
         tipo,
         material,
       },
@@ -377,11 +388,25 @@ app.delete('/api/utilizables/:id', async (req, res) => {
 app.post('/api/cotizaciones', async (req, res) => {
   console.log('Solicitud recibida en /api/cotizaciones:', req.body);
 
-  const { nombre, link, presupuesto, tamano, DescripcionCliente, tipo } = req.body;
+  const { nombre, link, presupuesto, tamano, DescripcionCliente, tipo, estatus, diseno, postprocesado, marketingEntrega, idConfiguracionCalculadora, TiempoOperandoHora, usoConsumible } = req.body;
 
-  if (!nombre || !link || !presupuesto || !tamano || !DescripcionCliente || !tipo) {
+  // Validar que los campos requeridos no sean string vacío ni null ni undefined
+  if (
+    !nombre || nombre.trim() === "" ||
+    !link || link.trim() === "" ||
+    presupuesto === undefined || presupuesto === null || presupuesto === "" ||
+    !tamano || tamano.trim() === "" ||
+    !DescripcionCliente || DescripcionCliente.trim() === "" ||
+    !tipo || tipo.trim() === "" ||
+    !estatus || estatus.trim() === "" ||
+    diseno === undefined || diseno === null || diseno === "" ||
+    postprocesado === undefined || postprocesado === null || postprocesado === "" ||
+    marketingEntrega === undefined || marketingEntrega === null || marketingEntrega === "" ||
+    !idConfiguracionCalculadora ||
+    TiempoOperandoHora === undefined || TiempoOperandoHora === null || TiempoOperandoHora === ""
+  ) {
     console.error('Faltan campos obligatorios');
-    return res.status(400).json({ error: 'Todos los campos obligatorios deben estar presentes.' });
+    return res.status(400).json({ error: 'Todos los campos obligatorios deben estar presentes y no vacíos.' });
   }
 
   try {
@@ -393,12 +418,14 @@ app.post('/api/cotizaciones', async (req, res) => {
         tamano,
         DescripcionCliente,
         tipo,
-        estatus: 'Pendiente', // Valor predeterminado
-        idConfiguracionCalculadora: null, // Valor por defecto
-        diseno: null, // Valor por defecto
-        postprocesado: null, // Valor por defecto
-        marketingEntrega: null, // Valor por defecto
-        comentarios: null, // Valor por defecto
+        estatus,
+        diseno: diseno != null ? String(diseno) : null,
+        postprocesado: postprocesado != null ? String(postprocesado) : null,
+        marketingEntrega: marketingEntrega != null ? String(marketingEntrega) : null,
+        idConfiguracionCalculadora: parseInt(idConfiguracionCalculadora, 10),
+        comentarios: null,
+        TiempoOperandoHora: TiempoOperandoHora !== "" ? parseInt(TiempoOperandoHora, 10) : null,
+        usoConsumible: usoConsumible !== undefined && usoConsumible !== "" ? parseInt(usoConsumible, 10) : null,
       },
     });
 
@@ -430,7 +457,7 @@ app.get('/api/cotizaciones/:id', async (req, res) => {
 // Ruta para actualizar una cotización existente
 app.put('/api/cotizaciones/:id', async (req, res) => {
   const { id } = req.params;
-  const { nombre, link, presupuesto, tamano, DescripcionCliente, tipo, diseno, postprocesado, marketingEntrega, comentarios, idConfiguracionCalculadora } = req.body;
+  const { nombre, link, presupuesto, tamano, DescripcionCliente, tipo, estatus, diseno, postprocesado, marketingEntrega, comentarios, idConfiguracionCalculadora, TiempoOperandoHora, usoConsumible } = req.body;
 
   try {
     const cotizacion = await prisma.cotizacion.update({
@@ -442,11 +469,14 @@ app.put('/api/cotizaciones/:id', async (req, res) => {
         tamano,
         DescripcionCliente,
         tipo,
-        diseno,
-        postprocesado,
-        marketingEntrega,
+        estatus,
+        diseno: diseno != null ? String(diseno) : null,
+        postprocesado: postprocesado != null ? String(postprocesado) : null,
+        marketingEntrega: marketingEntrega != null ? String(marketingEntrega) : null,
         comentarios,
-        idConfiguracionCalculadora: idConfiguracionCalculadora ? parseInt(idConfiguracionCalculadora, 10) : null, // Conversión a Int o Null
+        idConfiguracionCalculadora: idConfiguracionCalculadora ? parseInt(idConfiguracionCalculadora, 10) : null,
+        TiempoOperandoHora: TiempoOperandoHora !== "" ? parseInt(TiempoOperandoHora, 10) : null,
+        usoConsumible: usoConsumible !== undefined && usoConsumible !== "" ? parseInt(usoConsumible, 10) : null,
       },
     });
     res.json({ message: 'Cotización actualizada exitosamente.', cotizacion });
@@ -473,18 +503,103 @@ app.delete('/api/cotizaciones/:id', async (req, res) => {
 // Ruta para obtener todas las cotizaciones
 app.get('/api/quotes', async (req, res) => {
   try {
-    console.log('Consulta recibida en /api/quotes'); // Confirmar que la ruta está siendo llamada
+    console.log('Consulta recibida en /api/quotes');
     const quotes = await prisma.cotizacion.findMany({
       select: {
         id: true,
         nombre: true,
+        link: true,
+        presupuesto: true,
+        estatus: true,
+        tamano: true,
+        tipo: true,
+        DescripcionCliente: true,
+        diseno: true,
+        postprocesado: true,
+        marketingEntrega: true,
+        idConfiguracionCalculadora: true,
+        comentarios: true,
       },
     });
-    console.log('Datos obtenidos de la base de datos:', quotes); // Verificar los datos obtenidos
+    console.log('Datos obtenidos de la base de datos:', quotes);
     res.json(quotes);
   } catch (error) {
     console.error('Error al obtener las cotizaciones:', error);
     res.status(500).json({ error: 'Error al obtener las cotizaciones' });
+  }
+});
+
+// Ruta para obtener todas las ventas
+app.get('/api/ventas', async (req, res) => {
+  try {
+    const ventas = await prisma.ventas.findMany({
+      select: {
+        id: true,
+        nombre: true,
+        costoTotal: true,
+        costoDiseno: true,
+        costoMarketingEntrega: true,
+        costoPostprocesado: true,
+        costoImpresora: true,
+        costoConsumible: true,
+      },
+    });
+    res.json(ventas);
+  } catch (error) {
+    console.error('Error al obtener las ventas:', error);
+    res.status(500).json({ error: 'Error al obtener las ventas' });
+  }
+});
+
+// Ruta para registrar una nueva venta
+app.post('/api/ventas', async (req, res) => {
+  const { nombre, costoDiseno, costoMarketingEntrega, costoPostprocesado, costoImpresora, costoConsumible, costoTotal, usoConsumible } = req.body;
+  try {
+    // Buscar la última cotización con ese nombre base para obtener el idConfiguracionCalculadora y usoConsumible
+    // El nombre de la venta es: "nombreCotizacion (Calculadora id)"
+    // Extraer el nombre base y el id de la calculadora
+    const match = nombre.match(/^(.*) \(Calculadora (\d+)\)$/);
+    let utilizablesId = null;
+    if (match) {
+      const configId = match[2];
+      // Buscar la configuración de calculadora
+      const config = await prisma.configuracionCalculadora.findUnique({
+        where: { id: parseInt(configId, 10) }
+      });
+      if (config) {
+        utilizablesId = config.utilizablesId;
+      }
+    }
+
+    // Registrar la venta
+    const venta = await prisma.ventas.create({
+      data: {
+        nombre,
+        costoDiseno,
+        costoMarketingEntrega,
+        costoPostprocesado,
+        costoImpresora,
+        costoConsumible,
+        costoTotal,
+      },
+    });
+
+    // Si hay consumible y cantidad a restar, actualiza el stock
+    if (utilizablesId && usoConsumible && usoConsumible > 0) {
+      await prisma.utilizables.update({
+        where: { id: utilizablesId },
+        data: {
+          cantidadActual: {
+            decrement: usoConsumible
+          }
+        }
+      });
+    }
+
+    res.status(201).json({ message: 'Venta registrada exitosamente.', venta });
+  } catch (error) {
+    console.error('Error al registrar la venta:', error);
+    res.status(500).json({ error: 'Error al registrar la venta.' });
   }
 });
 
@@ -550,6 +665,94 @@ app.put('/api/users/:id', async (req, res) => {
     res.json({ message: 'Usuario actualizado exitosamente.', user });
   } catch (error) {
     res.status(500).json({ error: 'Error al actualizar el usuario' });
+  }
+});
+
+// Rutas para Puestos
+app.get('/api/puestos', async (req, res) => {
+  try {
+    const puestos = await prisma.puesto.findMany({
+      select: {
+        id: true,
+        nombre: true,
+        cuotaPorHora: true,
+        estatus: true,
+        descripcion: true,
+      },
+    });
+    res.json(puestos);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener los puestos' });
+  }
+});
+
+app.get('/api/puestos/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const puesto = await prisma.puesto.findUnique({
+      where: { id: parseInt(id, 10) },
+      select: {
+        id: true,
+        nombre: true,
+        cuotaPorHora: true,
+        estatus: true,
+        descripcion: true,
+      },
+    });
+    if (!puesto) {
+      return res.status(404).json({ error: 'Puesto no encontrado' });
+    }
+    res.json(puesto);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener el puesto' });
+  }
+});
+
+app.post('/api/puestos', async (req, res) => {
+  const { nombre, cuotaPorHora, estatus, descripcion } = req.body;
+  try {
+    const puesto = await prisma.puesto.create({
+      data: {
+        nombre,
+        cuotaPorHora,
+        estatus: parseInt(estatus, 10),
+        descripcion,
+      },
+    });
+    res.status(201).json(puesto);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al crear el puesto' });
+  }
+});
+
+app.put('/api/puestos/:id', async (req, res) => {
+  const { id } = req.params;
+  const { nombre, cuotaPorHora, estatus, descripcion } = req.body;
+  try {
+    const puesto = await prisma.puesto.update({
+      where: { id: parseInt(id, 10) },
+      data: {
+        nombre,
+        cuotaPorHora,
+        estatus: parseInt(estatus, 10),
+        descripcion,
+      },
+    });
+    res.json(puesto);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al actualizar el puesto' });
+  }
+});
+
+app.delete('/api/puestos/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const puesto = await prisma.puesto.delete({
+      where: { id: parseInt(id, 10) },
+    });
+    res.json({ message: 'Puesto eliminado exitosamente.', puesto });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al eliminar el puesto' });
   }
 });
 

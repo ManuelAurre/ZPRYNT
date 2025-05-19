@@ -14,6 +14,7 @@ const QuoteRequest = ({ showModal, handleClose }) => {
     marketingEntrega: '',
     comentarios: '',
     idConfiguracionCalculadora: '',
+    TiempoOperandoHora: '', // Nuevo campo agregado
   });
 
   const [calculatorConfigs, setCalculatorConfigs] = useState([]); // Estado para almacenar las configuraciones de la calculadora
@@ -64,6 +65,7 @@ const QuoteRequest = ({ showModal, handleClose }) => {
       marketingEntrega: formData.marketingEntrega,
       comentarios: formData.comentarios,
       idConfiguracionCalculadora: formData.idConfiguracionCalculadora,
+      TiempoOperandoHora: parseInt(formData.TiempoOperandoHora, 10), // Nuevo campo agregado
     };
 
     console.log('Datos enviados:', payload);
@@ -184,6 +186,19 @@ const QuoteRequest = ({ showModal, handleClose }) => {
                 </option>
               ))}
             </select>
+          </div>
+          {/* Campo para tiempo operando por hora */}
+          <div className="form-group mt-2">
+            <label style={{ textAlign: 'left', display: 'block' }}>Tiempo operando por hora:</label>
+            <input
+              type="number"
+              className="form-control"
+              name="TiempoOperandoHora"
+              value={formData.TiempoOperandoHora || ''}
+              onChange={handleChange}
+              min={0}
+              required
+            />
           </div>
         </form>
       </Modal.Body>

@@ -40,6 +40,8 @@ model Cotizacion {
   marketingEntrega          String?
   comentarios               String?
   DescripcionCliente        String
+  usoConsumible             Int?
+  TiempoOperandoHora        Int?
 }
 
 model Utilizables {
@@ -70,4 +72,15 @@ model Puesto{
   cuotaPorHora          String
   estatus               Int
   descripcion           String
+}
+
+model Ventas{
+  id                    Int     @id @default(autoincrement())
+  nombre                String?
+  costoDiseno           Int?
+  costoMarketingEntrega Int?
+  costoPostprocesado    Int?
+  costoConsumible       Int?
+  costoImpresora        Int?
+  costoTotal            Int?
 }
