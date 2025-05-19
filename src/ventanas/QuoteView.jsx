@@ -2,6 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 import '../styles/Modal.css'; // Import the new CSS file
 
+const getTokenFromCookie = () => {
+  const match = document.cookie.match(/(^| )token=([^;]+)/);
+  return match ? match[2] : null;
+};
+
 const QuoteView = ({ showModal, handleClose, mode, quoteData }) => {
   const [formData, setFormData] = useState({
     nombre: '',
@@ -39,7 +44,10 @@ const QuoteView = ({ showModal, handleClose, mode, quoteData }) => {
 
   const fetchCalculatorConfigs = async () => {
     try {
-      const response = await fetch(`/api/calculadoras`);
+      const token = getTokenFromCookie();
+      const response = await fetch(`/api/calculadoras`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       if (!response.ok) throw new Error('Error al obtener las configuraciones de la calculadora');
       const data = await response.json();
       setCalculatorConfigs(data);
@@ -80,6 +88,7 @@ const QuoteView = ({ showModal, handleClose, mode, quoteData }) => {
     console.log('Datos enviados:', payload);
 
     try {
+      const token = getTokenFromCookie();
       const url = mode === 'add' ? '/api/cotizaciones' : `/api/cotizaciones/${quoteData.id}`;
       const method = mode === 'add' ? 'POST' : 'PUT';
 
@@ -87,6 +96,7 @@ const QuoteView = ({ showModal, handleClose, mode, quoteData }) => {
         method,
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
       });
@@ -112,8 +122,10 @@ const QuoteView = ({ showModal, handleClose, mode, quoteData }) => {
     if (!confirmDelete) return;
 
     try {
+      const token = getTokenFromCookie();
       const response = await fetch(`/api/cotizaciones/${quoteData.id}`, {
         method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (response.ok) {

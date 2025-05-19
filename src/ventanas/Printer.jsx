@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
 
+const getTokenFromCookie = () => {
+  const match = document.cookie.match(/(^| )token=([^;]+)/);
+  return match ? match[2] : null;
+};
+
 const Printer = ({ showModal, handleClose, mode }) => {
   const [formData, setFormData] = useState({
     nombre: '',
@@ -28,10 +33,12 @@ const Printer = ({ showModal, handleClose, mode }) => {
     console.log('Datos enviados:', payload);
 
     try {
+      const token = getTokenFromCookie();
       const response = await fetch('http://localhost:4000/api/impresoras', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
       });

@@ -1,0 +1,93 @@
+.boorado-modal-backdrop {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+}
+
+.boorado-modal {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.15);
+  min-width: 300px;
+  max-width: 400px;
+  text-align: center;
+  padding: 0;
+  overflow: hidden;
+}
+
+.boorado-modal-header {
+  background-color: #6f42c1;
+  color: #fff;
+  padding: 1rem 1.5rem;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  font-weight: 600;
+  font-size: 1.2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.boorado-modal-header-left {
+  text-align: left;
+  flex: 1;
+  justify-content: flex-start;
+  display: flex;
+  align-items: center;
+  padding-left: 0.2rem;
+}
+
+.boorado-modal-close {
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  color: #fff;
+  cursor: pointer;
+  line-height: 1;
+  margin-left: 10px;
+}
+
+.boorado-modal-content {
+  padding: 1.5rem 1.5rem 1rem 1.5rem;
+}
+
+.boorado-modal-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.btn-morado {
+  background: #a259f7;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 0.5rem 1.2rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-morado:hover {
+  background: #7c2ae8;
+}
+
+.btn-gris {
+  background: #e0e0e0;
+  color: #333;
+  border: none;
+  border-radius: 5px;
+  padding: 0.5rem 1.2rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-gris:hover {
+  background: #bdbdbd;
+}

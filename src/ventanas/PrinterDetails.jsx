@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 
+const getTokenFromCookie = () => {
+  const match = document.cookie.match(/(^| )token=([^;]+)/);
+  return match ? match[2] : null;
+};
+
 const PrinterDetails = ({ showModal, handleClose, selectedPrinterId }) => {
   const [printerData, setPrinterData] = useState({
     nombre: '',
@@ -18,7 +23,10 @@ const PrinterDetails = ({ showModal, handleClose, selectedPrinterId }) => {
         setLoading(true);
         setError('');
         try {
-          const response = await fetch(`http://localhost:4000/api/impresoras/${selectedPrinterId}`);
+          const token = getTokenFromCookie();
+          const response = await fetch(`http://localhost:4000/api/impresoras/${selectedPrinterId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
           if (response.ok) {
             const data = await response.json();
             setPrinterData({
@@ -51,10 +59,12 @@ const PrinterDetails = ({ showModal, handleClose, selectedPrinterId }) => {
 
   const handleSave = async () => {
     try {
+      const token = getTokenFromCookie();
       const response = await fetch(`http://localhost:4000/api/impresoras/${selectedPrinterId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(printerData),
       });
@@ -76,8 +86,10 @@ const PrinterDetails = ({ showModal, handleClose, selectedPrinterId }) => {
     if (!confirmDelete) return;
 
     try {
+      const token = getTokenFromCookie();
       const response = await fetch(`http://localhost:4000/api/impresoras/${selectedPrinterId}`, {
         method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (response.ok) {

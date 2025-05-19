@@ -1,13 +1,13 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Login from './components/Login.jsx';
-import Register from './components/Register.jsx';
-import Home from './components/Home.jsx';
-import PrinterDetails from './components/PrinterDetails.jsx';
-import ConsumableDetails from './components/consumables-details.jsx';
-import QuoteRequest from './components/QuoteRequest.jsx';
-import QuoteView from './components/QuoteView.jsx';
-import QuoteViewVendors from './components/QuoteViewVendors.jsx';
+import Login from './ventanas/Login.jsx';
+import Register from './ventanas/Register.jsx';
+import Home from './ventanas/Home.jsx';
+import PrinterDetails from './ventanas/PrinterDetails.jsx';
+import ConsumableDetails from './ventanas/consumables-details.jsx';
+import QuoteRequest from './ventanas/QuoteRequest.jsx';
+import QuoteView from './ventanas/QuoteView.jsx';
+import QuoteViewVendors from './ventanas/QuoteViewVendors.jsx';
 import './App.css';
 
 function App() {

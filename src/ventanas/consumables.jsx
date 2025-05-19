@@ -2,6 +2,11 @@ import React, { useState } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 import '../styles/Modal.css'; // Import the new CSS file
 
+const getTokenFromCookie = () => {
+    const match = document.cookie.match(/(^| )token=([^;]+)/);
+    return match ? match[2] : null;
+};
+
 const Consumables = ({ showModal, handleClose }) => {
     const [formData, setFormData] = useState({
         nombre: '',
@@ -39,10 +44,12 @@ const Consumables = ({ showModal, handleClose }) => {
         console.log('Datos enviados:', payload);
 
         try {
+            const token = getTokenFromCookie();
             const response = await fetch('http://localhost:4000/api/utilizables', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify(payload),
             });

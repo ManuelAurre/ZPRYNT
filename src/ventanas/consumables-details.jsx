@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 
+const getTokenFromCookie = () => {
+  const match = document.cookie.match(/(^| )token=([^;]+)/);
+  return match ? match[2] : null;
+};
+
 const ConsumablesDetails = ({ showModal, handleClose, selectedConsumableId }) => {
   const [consumableData, setConsumableData] = useState({
     nombre: '',
@@ -19,7 +24,10 @@ const ConsumablesDetails = ({ showModal, handleClose, selectedConsumableId }) =>
         setLoading(true);
         setError('');
         try {
-          const response = await fetch(`http://localhost:4000/api/utilizables/${selectedConsumableId}`);
+          const token = getTokenFromCookie();
+          const response = await fetch(`http://localhost:4000/api/utilizables/${selectedConsumableId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
           if (response.ok) {
             const data = await response.json();
             setConsumableData({
@@ -53,10 +61,12 @@ const ConsumablesDetails = ({ showModal, handleClose, selectedConsumableId }) =>
 
   const handleSave = async () => {
     try {
+      const token = getTokenFromCookie();
       const response = await fetch(`http://localhost:4000/api/utilizables/${selectedConsumableId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(consumableData),
       });
@@ -78,8 +88,10 @@ const ConsumablesDetails = ({ showModal, handleClose, selectedConsumableId }) =>
     if (!confirmDelete) return;
 
     try {
+      const token = getTokenFromCookie();
       const response = await fetch(`http://localhost:4000/api/utilizables/${selectedConsumableId}`, {
         method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (response.ok) {

@@ -14,6 +14,11 @@ const CalculadoraModal = ({ showModal, handleClose, mode, calculatorData }) => {
   const [printers, setPrinters] = useState([]); // Estado para almacenar las impresoras
   const [consumables, setConsumables] = useState([]); // Estado para almacenar los consumibles
 
+  const getTokenFromCookie = () => {
+    const match = document.cookie.match(/(^| )token=([^;]+)/);
+    return match ? match[2] : null;
+  };
+
   useEffect(() => {
     if (calculatorData && mode === 'edit') {
       setFormData({
@@ -29,7 +34,10 @@ const CalculadoraModal = ({ showModal, handleClose, mode, calculatorData }) => {
 
   const fetchPrinters = async () => {
     try {
-      const response = await fetch(`/api/impresoras`);
+      const token = getTokenFromCookie();
+      const response = await fetch(`/api/impresoras`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       if (!response.ok) throw new Error('Error al obtener las impresoras');
       const data = await response.json();
       setPrinters(data);
@@ -40,7 +48,10 @@ const CalculadoraModal = ({ showModal, handleClose, mode, calculatorData }) => {
 
   const fetchConsumables = async () => {
     try {
-      const response = await fetch(`/api/utilizables`);
+      const token = getTokenFromCookie();
+      const response = await fetch(`/api/utilizables`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       if (!response.ok) throw new Error('Error al obtener los consumibles');
       const data = await response.json();
       setConsumables(data);
@@ -77,6 +88,7 @@ const CalculadoraModal = ({ showModal, handleClose, mode, calculatorData }) => {
     console.log('Datos enviados:', payload);
 
     try {
+      const token = getTokenFromCookie();
       const url = mode === 'add' ? '/api/calculadoras' : `/api/calculadoras/${calculatorData.id}`;
       const method = mode === 'add' ? 'POST' : 'PUT';
 
@@ -84,6 +96,7 @@ const CalculadoraModal = ({ showModal, handleClose, mode, calculatorData }) => {
         method,
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
       });
@@ -109,8 +122,10 @@ const CalculadoraModal = ({ showModal, handleClose, mode, calculatorData }) => {
     if (!confirmDelete) return;
 
     try {
+      const token = getTokenFromCookie();
       const response = await fetch(`/api/calculadoras/${calculatorData.id}`, {
         method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (response.ok) {

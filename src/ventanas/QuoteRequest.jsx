@@ -18,9 +18,17 @@ const QuoteRequest = ({ showModal, handleClose }) => {
 
   const [calculatorConfigs, setCalculatorConfigs] = useState([]); // Estado para almacenar las configuraciones de la calculadora
 
+  const getTokenFromCookie = () => {
+    const match = document.cookie.match(/(^| )token=([^;]+)/);
+    return match ? match[2] : null;
+  };
+
   const fetchCalculatorConfigs = async () => {
     try {
-      const response = await fetch(`/api/calculadoras`);
+      const token = getTokenFromCookie();
+      const response = await fetch(`/api/calculadoras`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       if (!response.ok) throw new Error('Error al obtener las configuraciones de la calculadora');
       const data = await response.json();
       setCalculatorConfigs(data);
@@ -61,10 +69,12 @@ const QuoteRequest = ({ showModal, handleClose }) => {
     console.log('Datos enviados:', payload);
 
     try {
+      const token = getTokenFromCookie();
       const response = await fetch('/api/cotizaciones', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
       });

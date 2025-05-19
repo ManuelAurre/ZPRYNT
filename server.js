@@ -161,9 +161,9 @@ app.delete('/api/calculadoras/:id', async (req, res) => {
 app.post('/api/impresoras', async (req, res) => {
   console.log('Solicitud recibida en /api/impresoras:', req.body);
 
-  const { nombre, tipo, imagen, velocidad } = req.body;
+  const { nombre, tipo, imagen, velocidad, costoPorHora, dimensiones } = req.body;
 
-  if (!nombre || !tipo || !imagen || !velocidad) {
+  if (!nombre || !tipo || !imagen || !velocidad || !costoPorHora || !dimensiones) {
     console.error('Faltan campos obligatorios');
     return res.status(400).json({ error: 'Todos los campos son obligatorios.' });
   }
@@ -175,6 +175,8 @@ app.post('/api/impresoras', async (req, res) => {
         tipo,
         imagen,
         velocidad: parseFloat(velocidad),
+        costoPorHora: parseInt(costoPorHora, 10),
+        dimensiones,
       },
     });
 
@@ -226,7 +228,7 @@ app.get('/api/impresoras', async (req, res) => {
 // Ruta para actualizar una impresora
 app.put('/api/impresoras/:id', async (req, res) => {
   const { id } = req.params;
-  const { nombre, tipo, imagen, velocidad } = req.body;
+  const { nombre, tipo, imagen, velocidad, costoPorHora, dimensiones } = req.body;
 
   try {
     const impresora = await prisma.impresora.update({
@@ -236,6 +238,8 @@ app.put('/api/impresoras/:id', async (req, res) => {
         tipo,
         imagen,
         velocidad: parseFloat(velocidad),
+        costoPorHora: costoPorHora ? parseInt(costoPorHora, 10) : undefined,
+        dimensiones,
       },
     });
     res.json({ message: 'Impresora actualizada exitosamente.', impresora });
@@ -481,6 +485,71 @@ app.get('/api/quotes', async (req, res) => {
   } catch (error) {
     console.error('Error al obtener las cotizaciones:', error);
     res.status(500).json({ error: 'Error al obtener las cotizaciones' });
+  }
+});
+
+// Ruta para obtener todos los usuarios
+app.get('/api/users', async (req, res) => {
+  try {
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        name: true, // Cambia 'nombre' por 'name'
+        email: true,
+        tipo: true,
+      },
+    });
+    res.json(users);
+  } catch (error) {
+    console.error('Error al obtener los usuarios:', error);
+    res.status(500).json({ error: 'Error al obtener los usuarios' });
+  }
+});
+
+// Obtener usuario por id
+app.get('/api/users/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: parseInt(id, 10) },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        tipo: true,
+        edad: true,
+      },
+    });
+    if (!user) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener el usuario' });
+  }
+});
+
+// Actualizar usuario por id
+app.put('/api/users/:id', async (req, res) => {
+  const { id } = req.params;
+  const { name, email, password, tipo, edad } = req.body;
+  try {
+    const data = {
+      name,
+      email,
+      tipo,
+      edad: edad ? parseInt(edad, 10) : undefined,
+    };
+    if (password && password.trim() !== '') {
+      data.password = password;
+    }
+    const user = await prisma.user.update({
+      where: { id: parseInt(id, 10) },
+      data,
+    });
+    res.json({ message: 'Usuario actualizado exitosamente.', user });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al actualizar el usuario' });
   }
 });
 

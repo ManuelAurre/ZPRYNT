@@ -17,11 +17,13 @@ model User {
 }
 
 model Impresora {
-  id         Int     @id @default(autoincrement())
-  nombre     String
-  tipo       String
-  imagen     String
-  velocidad  Float
+  id              Int     @id @default(autoincrement())
+  nombre          String
+  tipo            String
+  imagen          String
+  velocidad       Float
+  dimensiones     String?
+  costoPorHora    String?
 }
 
 model Cotizacion {
@@ -48,6 +50,7 @@ model Utilizables {
   tipo            String
   material        String
   costoDeCompra   String
+  costoDeVenta    String?
 }
 
 model ConfiguracionCalculadora {
@@ -59,4 +62,12 @@ model ConfiguracionCalculadora {
   costoPostprocesado   Float
   costoMarketingEntrega Float
   empleadoId           Int
+}
+
+model Puesto{
+  id                    Int     @id @default(autoincrement())
+  nombre                String
+  cuotaPorHora          String
+  estatus               Int
+  descripcion           String
 }

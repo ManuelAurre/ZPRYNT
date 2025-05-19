@@ -27,7 +27,23 @@ const Login = () => {
         body: JSON.stringify(formData)
       });
       if (response.ok) {
-        navigate('/home');
+        let data;
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          data = await response.json();
+          document.cookie = `token=${data.token}; path=/; max-age=86400;`;
+          navigate('/home');
+        } else {
+          // Si el backend responde con el token como texto plano
+          data = await response.text();
+          // Si el texto parece un token, lo guardamos
+          if (data && data.length > 10) { // Ajusta la condición según tu token
+            document.cookie = `token=${data}; path=/; max-age=86400;`;
+            navigate('/home');
+          } else {
+            alert('Respuesta inesperada del servidor. Contacta al administrador.');
+          }
+        }
       } else {
         console.error('Invalid credentials');
       }
