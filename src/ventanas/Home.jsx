@@ -15,6 +15,7 @@ import CalculadoraConfigModal from '../componentes/CalculadoraConfigModal';
 import PuestoModal from '../componentes/PuestoModal';
 import VentaViewModal from '../componentes/VentaViewModal';
 import useHomeLogic from '../componentes/useHomeLogic';
+import Titulo from '../componentes/Titulo';
 import '../styles/Home.css';
 
 const Home = () => {
@@ -66,7 +67,7 @@ const Home = () => {
               onDelete={handleDeleteClick}
               onEdit={handleEditClick}
               tabla="users"
-              renderCell={renderUsuarioCell}
+              renderCell={(col, fila) => renderUsuarioCell(col, fila, puestos)}
             />
           </div>
         );
@@ -193,42 +194,43 @@ const Home = () => {
     <div className="container mt-3">
       <div className="row">
         <div className="col-md-12">
-          <div className="d-flex justify-content-between align-items-center mb-3">
-            <h2>Impresoras3D</h2>
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={() => {
-                document.cookie = 'token=; path=/; max-age=0;';
-                navigate('/login');
-              }}
-            >
-              Salir
-            </button>
-          </div>
+          <Titulo
+            onSalir={() => {
+              document.cookie = 'token=; path=/; max-age=0;';
+              navigate('/login');
+            }}
+          />
           <ul className="nav nav-tabs" id="myTab" role="tablist">
-            {['personal', 'puestos', 'printer', 'consumibles', 'quotes', 'calculator', 'ventas'].map(tab => (
-              <li className="nav-item" key={tab}>
+            {[
+              { key: 'personal', label: 'Personal Participante' },
+              { key: 'puestos', label: 'Puestos' },
+              { key: 'printer', label: 'Impresoras' },
+              { key: 'consumibles', label: 'Consumibles' },
+              { key: 'quotes', label: 'Cotizaciones' },
+              { key: 'calculator', label: 'Configuracion' },
+              { key: 'ventas', label: 'Ventas' }
+            ].map(tab => (
+              <li className="nav-item" key={tab.key}>
                 <a
-                  className={`nav-link ${activeTab === tab ? 'active' : ''} ${isTabDisabled(tab) ? 'disabled-tab' : ''}`}
-                  id={`${tab}-tab`}
+                  className={`nav-link ${activeTab === tab.key ? 'active' : ''} ${isTabDisabled(tab.key) ? 'disabled-tab' : ''}`}
+                  id={`${tab.key}-tab`}
                   data-bs-toggle="tab"
-                  href={`#${tab}`}
+                  href={`#${tab.key}`}
                   role="tab"
-                  aria-controls={tab}
-                  aria-selected={activeTab === tab}
-                  tabIndex={isTabDisabled(tab) ? -1 : 0}
-                  aria-disabled={isTabDisabled(tab)}
+                  aria-controls={tab.key}
+                  aria-selected={activeTab === tab.key}
+                  tabIndex={isTabDisabled(tab.key) ? -1 : 0}
+                  aria-disabled={isTabDisabled(tab.key)}
                   onClick={e => {
-                    if (isTabDisabled(tab)) {
+                    if (isTabDisabled(tab.key)) {
                       e.preventDefault();
                       return;
                     }
-                    setActiveTab(tab);
+                    setActiveTab(tab.key);
                   }}
-                  style={isTabDisabled(tab) ? { pointerEvents: 'none', opacity: 0.5 } : {}}
+                  style={isTabDisabled(tab.key) ? { pointerEvents: 'none', opacity: 0.5 } : {}}
                 >
-                  {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                  {tab.label}
                 </a>
               </li>
             ))}

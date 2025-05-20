@@ -1,4 +1,3 @@
-
 // Helpers para obtener nombres
 export const getUtilizableNombre = (id, consumables) => {
   const u = consumables.find(x => Number(x.id) === Number(id));
@@ -11,6 +10,7 @@ export const getImpresoraNombre = (id, printers) => {
 };
 
 export const getPuestoNombre = (id, puestos) => {
+  if (!puestos || !Array.isArray(puestos)) return id;
   const p = puestos.find(x => String(x.id) === String(id));
   return p ? p.nombre : id;
 };

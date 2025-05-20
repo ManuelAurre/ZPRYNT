@@ -54,6 +54,10 @@ const Login = () => {
 
   return (
     <div className="login-container">
+      <div className="login-logo-zprynt">
+        <img src={require('../Img/Logo.jpg')} alt="Logo ZPRYNT" className="login-logo" />
+        <span className="login-zprynt-text">ZPRYNT</span>
+      </div>
       <h3>Inicio de Sesión</h3>
       <form onSubmit={handleSubmit}>
         <div className="form-group">
@@ -64,8 +68,8 @@ const Login = () => {
           <label htmlFor="loginPassword">Contraseña</label>
           <input type="password" className="form-control" id="loginPassword" name="password" placeholder="Ingresa tu contraseña" required onChange={handleChange} />
         </div>
-        <button type="submit" className="btn btn-primary">Iniciar Sesión</button>
-        <button type="button" className="btn btn-link" onClick={() => navigate('/register')}>Registrarte</button>
+        <button type="submit" className="btn-login-primary">Iniciar Sesión</button>
+        <button type="button" className="btn-login-link" onClick={() => navigate('/register')}>Registrarte</button>
       </form>
     </div>
   );

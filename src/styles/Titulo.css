@@ -1,0 +1,43 @@
+.titulo-morado {
+  background: #5427E2;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 24px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+}
+
+.titulo-logo-texto {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.titulo-logo {
+  height: 48px;
+  width: 48px;
+  object-fit: contain;
+}
+
+.titulo-texto {
+  color: #fff;
+  font-size: 2rem;
+  font-weight: bold;
+  letter-spacing: 2px;
+}
+
+.titulo-boton-salir {
+  background: #888;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 8px 22px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.titulo-boton-salir:hover {
+  background: #666;
+}

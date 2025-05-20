@@ -1,5 +1,5 @@
 body {
-  background-color: #4a148c;
+  background-color: #5427E2;
 }
 
 .register-container {
@@ -7,44 +7,82 @@ body {
   margin: 50px auto;
   padding: 20px;
   border-radius: 10px;
-  background-color: #f3e5f5;
+  background-color: #5427E2;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.register-logo-zprynt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.register-logo {
+  height: 48px;
+  width: 48px;
+  object-fit: contain;
+}
+
+.register-zprynt-text {
+  color: #fff;
+  font-size: 2rem;
+  font-weight: bold;
+  letter-spacing: 2px;
+  text-shadow: 0 1px 4px #5427E2;
 }
 
 .register-container h3 {
   text-align: center;
-  color: #6a1b9a;
+  color: #ffffff;
 }
 
 .form-group label {
-  color: #6a1b9a;
+  color: #ffffff;
 }
 
 .form-control {
-  border: 1px solid #6a1b9a;
+  border: 1px solid #5427E2;
   border-radius: 5px;
-  margin-bottom: 15px; /* Add margin to the bottom of the text boxes */
+  margin-bottom: 15px;
 }
 
-.btn-primary {
-  background-color: #8e24aa;
-  border-color: #8e24aa;
-  margin-top: 10px; /* Add margin to the top of the buttons */
+/* Botón registrar personalizado */
+.btn-register-primary {
+  background-color: #43d835;
+  border: none;
+  color: #fff;
+  padding: 8px 22px;
+  border-radius: 5px;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-top: 10px;
+  margin-right: 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+  display: inline-block;
 }
 
-.btn-primary:hover {
-  background-color: #6a1b9a;
-  border-color: #6a1b9a;
-}
-
-.btn-secondary {
-  background-color: #b39ddb;
-  border-color: #b39ddb;
-  margin-top: 10px; /* Add margin to the top of the buttons */
-  margin-left: 10px; /* Add margin to the left of the Cancel button */
-}
-
-.btn-secondary:hover {
+.btn-register-primary:hover {
   background-color: #9575cd;
-  border-color: #9575cd;
+}
+
+/* Botón cancelar personalizado */
+.btn-register-link {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+  margin-top: 10px;
+  padding: 8px 22px;
+  display: inline-block;
+}
+
+.btn-register-link:hover {
+  color: #b39ddb;
+  text-decoration: underline;
 }

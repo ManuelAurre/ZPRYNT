@@ -1,14 +1,18 @@
 .modal-header {
-  background-color: #6f42c1;
+  background-color: #5427E2;
   color: white;
 }
 
 .modal-footer .btn-secondary {
-  background-color: #6f42c1;
-  border-color: #6f42c1;
+  background-color: #5427E2;
+  border-color: #5427E2;
 }
 
 .modal-footer .btn-primary {
-  background-color: #6f42c1;
-  border-color: #6f42c1;
+  background-color: #5427E2;
+  border-color: #5427E2;
+}
+
+.form-group label {
+  color: #000;
 }

@@ -45,6 +45,10 @@ function Register() {
 
   return (
     <div className="register-container">
+      <div className="register-logo-zprynt">
+        <img src={require('../Img/Logo.jpg')} alt="Logo ZPRYNT" className="register-logo" />
+        <span className="register-zprynt-text">ZPRYNT</span>
+      </div>
       <h3>Registro de Usuarios</h3>
       <form id="registerForm" onSubmit={handleSubmit}>
         <div className="form-group">
@@ -68,8 +72,8 @@ function Register() {
           <input type="number" className="form-control" id="registerEdad" name="edad" placeholder="Ingresa tu edad" required onChange={handleChange} />
         </div>
         <div className="button-group">
-          <button type="submit" className="btn btn-primary">Registrarse</button>
-          <button type="button" className="btn btn-secondary" onClick={handleCancel}>Cancelar</button>
+          <button type="submit" className="btn-register-primary">Registrarse</button>
+          <button type="button" className="btn-register-link" onClick={handleCancel}>Cancelar</button>
         </div>
       </form>
     </div>

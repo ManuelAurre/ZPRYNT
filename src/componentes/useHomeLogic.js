@@ -292,7 +292,9 @@ export default function useHomeLogic(navigate) {
   };
 
   useEffect(() => {
-    if (activeTab === 'printer') {
+    if (activeTab === 'personal') {
+      fetchUsuarios();
+    } else if (activeTab === 'printer') {
       fetchPrinters();
     } else if (activeTab === 'consumibles') {
       fetchConsumables();
@@ -302,6 +304,8 @@ export default function useHomeLogic(navigate) {
       fetchPuestos();
     } else if (activeTab === 'ventas') {
       fetchVentas();
+    } else if (activeTab === 'quotes') {
+      fetchQuotes();
     }
     // eslint-disable-next-line
   }, [activeTab]);

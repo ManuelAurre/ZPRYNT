@@ -21,7 +21,7 @@
 }
 
 .boorado-modal-header {
-  background-color: #6f42c1;
+  background-color: #5427E2;
   color: #fff;
   padding: 1rem 1.5rem;
   border-top-left-radius: 10px;
@@ -64,7 +64,7 @@
 }
 
 .btn-morado {
-  background: #a259f7;
+  background: #5427E2;
   color: #fff;
   border: none;
   border-radius: 5px;
@@ -75,7 +75,7 @@
 }
 
 .btn-morado:hover {
-  background: #7c2ae8;
+  background: #3a1a99;
 }
 
 .btn-gris {
@@ -91,4 +91,8 @@
 
 .btn-gris:hover {
   background: #bdbdbd;
+}
+
+.form-group label {
+  color: #000;
 }
