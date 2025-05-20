@@ -1,572 +1,62 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import PrinterDetails from './PrinterDetails';
-import Printer from './Printer';
 import ConsumableDetails from './consumables-details';
-import Consumable from './consumables';
 import QuoteRequest from './QuoteRequest';
 import QuoteView from './QuoteView';
-import CalculadoraModal from './CalculadoraModal'; // Importamos el componente CalculadoraModal
-import TablaDatos from '../componentes/TablaDatos'; // Importar el nuevo componente
-import Boorado from '../componentes/Boorado'; // Importar el componente Boorado
-import UserModal from '../componentes/UserModal'; // Importar el modal de usuario
-import PrinterModal from '../componentes/PrinterModal'; // Importar el nuevo modal de impresoras
-import ConsumableModal from '../componentes/ConsumableModal'; // Importar el modal de consumibles
-import QuoteModal from '../componentes/QuoteModal'; // Importar el modal de cotizaciones
-import CalculadoraConfigModal from '../componentes/CalculadoraConfigModal'; // Importar el modal de configuración de calculadora
-import PuestoModal from '../componentes/PuestoModal'; // Importar el modal de puestos
-import VentaViewModal from '../componentes/VentaViewModal'; // Importa el nuevo modal
-import '../styles/Home.css'; // Import the new CSS file
+import CalculadoraModal from './CalculadoraModal';
+import TablaDatos from '../componentes/TablaDatos';
+import Boorado from '../componentes/Boorado';
+import UserModal from '../componentes/UserModal';
+import PrinterModal from '../componentes/PrinterModal';
+import ConsumableModal from '../componentes/ConsumableModal';
+import QuoteModal from '../componentes/QuoteModal';
+import CalculadoraConfigModal from '../componentes/CalculadoraConfigModal';
+import PuestoModal from '../componentes/PuestoModal';
+import VentaViewModal from '../componentes/VentaViewModal';
+import useHomeLogic from '../componentes/useHomeLogic';
+import '../styles/Home.css';
 
 const Home = () => {
   const navigate = useNavigate();
-  const [showPrinterDetails, setShowPrinterDetails] = useState(false);
-  const [showConsumableDetails, setShowConsumableDetails] = useState(false);
-  const [showQuoteRequest, setShowQuoteRequest] = useState(false);
-  const [showPrinterModal, setShowPrinterModal] = useState(false); // Modal para agregar/editar impresora
-  const [printerModalMode, setPrinterModalMode] = useState('add'); // Modo del modal de impresoras
-  const [printerEditData, setPrinterEditData] = useState(null); // Datos para editar impresora
-  const [showConsumableModal, setShowConsumableModal] = useState(false); // Modal para agregar consumible
-  const [consumableModalMode, setConsumableModalMode] = useState('add'); // Modo del modal de consumibles
-  const [consumableEditData, setConsumableEditData] = useState(null); // Datos para editar consumible
-  const [activeTab, setActiveTab] = useState('printer'); // Estado para la pestaña activa
-  const [showCalculadoraAdd, setShowCalculadoraAdd] = useState(false); // Estado para agregar calculadora
-  const [showCalculadoraEdit, setShowCalculadoraEdit] = useState(false); // Estado para editar calculadora
-  const [selectedQuote, setSelectedQuote] = useState(null); // Estado para la cotización seleccionada
-  const [quotes, setQuotes] = useState([]); // Estado para almacenar todas las cotizaciones
-  const [printers, setPrinters] = useState([]); // Estado para almacenar las impresoras
-  const [consumables, setConsumables] = useState([]); // Estado para almacenar los consumibles
-  const [calculatorConfigs, setCalculatorConfigs] = useState([]); // Estado para almacenar las configuraciones de la calculadora
-  const [selectedPrinterId, setSelectedPrinterId] = useState(null); // Estado para almacenar el ID de la impresora seleccionada
-  const [selectedPrinterDetails, setSelectedPrinterDetails] = useState(null); // Estado para almacenar los detalles de la impresora seleccionada
-  const [selectedConsumableId, setSelectedConsumableId] = useState(null); // Estado para almacenar el ID del consumible seleccionado
-  const [selectedCalculatorId, setSelectedCalculatorId] = useState(null); // Estado para almacenar el ID de la configuración seleccionada
-  const [selectedCalculatorDetails, setSelectedCalculatorDetails] = useState(null); // Estado para almacenar los detalles de la configuración seleccionada
-  const [selectedQuoteId, setSelectedQuoteId] = useState(null); // Estado para almacenar el ID de la cotización seleccionada
-  const [selectedQuoteDetails, setSelectedQuoteDetails] = useState(null); // Estado para almacenar los detalles de la cotización seleccionada
-  const [tablaSeleccionada, setTablaSeleccionada] = useState('impresoras'); // Estado para el select de tabla
-  const [usuarios, setUsuarios] = useState([]); // Estado para usuarios
-  const [showBoorado, setShowBoorado] = useState(false); // Estado para mostrar el modal de borrado
-  const [deleteInfo, setDeleteInfo] = useState({ id: null, tabla: null }); // Estado para la información de borrado
-  const [showUserModal, setShowUserModal] = useState(false); // Estado para mostrar el modal de usuario
-  const [selectedUserId, setSelectedUserId] = useState(null); // Estado para almacenar el ID del usuario seleccionado
-  const [showQuoteModal, setShowQuoteModal] = useState(false); // Estado para mostrar el modal de cotizaciones
-  const [quoteModalMode, setQuoteModalMode] = useState('add'); // Modo del modal de cotizaciones
-  const [quoteEditData, setQuoteEditData] = useState(null); // Datos para editar cotización
-  const [showCalculadoraConfigModal, setShowCalculadoraConfigModal] = useState(false); // Estado para mostrar el modal de configuración de calculadora
-  const [calculadoraConfigModalMode, setCalculadoraConfigModalMode] = useState('add'); // Modo del modal de configuración de calculadora
-  const [calculadoraConfigEditData, setCalculadoraConfigEditData] = useState(null); // Datos para editar configuración de calculadora
-  const [puestos, setPuestos] = useState([]);
-  const [showPuestoModal, setShowPuestoModal] = useState(false);
-  const [puestoModalMode, setPuestoModalMode] = useState('add');
-  const [puestoEditData, setPuestoEditData] = useState(null);
-  const [ventas, setVentas] = useState([]); // Estado para almacenar las ventas
-  const [showVentaView, setShowVentaView] = useState(false);
-  const [ventaViewData, setVentaViewData] = useState(null);
+  const logic = useHomeLogic(navigate);
 
-  const getTokenFromCookie = () => {
-    const match = document.cookie.match(/(^| )token=([^;]+)/);
-    return match ? match[2] : null;
-  };
-
-  useEffect(() => {
-    // Redirigir a login si no hay token
-    const token = getTokenFromCookie();
-    if (!token) {
-      navigate('/login');
-    }
-  }, []);
-
-  const fetchWithAuth = async (url, options = {}) => {
-    const token = getTokenFromCookie();
-    return fetch(url, {
-      ...options,
-      headers: {
-        ...(options.headers || {}),
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-    });
-  };
-
-  const fetchQuotes = async () => {
-    try {
-      console.log('Realizando solicitud a /api/quotes'); // Confirmar que se está llamando a la API
-      const response = await fetchWithAuth(`/api/quotes`);
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`Error en la respuesta del servidor: ${response.status} ${response.statusText}`, errorText);
-        throw new Error(`Error en la respuesta del servidor: ${response.status} ${response.statusText}`);
-      }
-      const data = await response.json();
-      console.log('Datos recibidos del servidor:', data); // Verificar los datos recibidos
-      // Mapeo para asegurar que las claves sean las esperadas por la tabla, pero sin sobrescribir valores válidos
-      const mappedData = data.map(q => ({
-        id: q.id,
-        nombre: q.nombre ?? q.name ?? '',
-        link: q.link ?? q.url ?? '',
-        presupuesto: q.presupuesto ?? '',
-        estatus: q.estatus ?? '',
-      }));
-      setQuotes(mappedData); // Actualizar el estado con las cotizaciones
-    } catch (error) {
-      console.error('Error al cargar las cotizaciones:', error);
-    }
-  };
-
-  const fetchPrinters = async () => {
-    try {
-      console.log('Realizando solicitud a /api/impresoras'); // Confirmar que se está llamando a la API
-      const response = await fetchWithAuth(`/api/impresoras`);
-      if (!response.ok) throw new Error('Error al obtener las impresoras');
-      const data = await response.json();
-      console.log('Impresoras obtenidas:', data); // Verificar los datos
-      setPrinters(data);
-    } catch (error) {
-      console.error('Error al cargar las impresoras:', error);
-    }
-  };
-
-  const fetchConsumables = async () => {
-    try {
-      console.log('Realizando solicitud a /api/utilizables'); // Confirmar que se está llamando a la API
-      const response = await fetchWithAuth(`/api/utilizables`);
-      if (!response.ok) throw new Error('Error al obtener los consumibles');
-      const data = await response.json();
-      console.log('Consumibles obtenidos:', data); // Verificar los datos
-      setConsumables(data);
-    } catch (error) {
-      console.error('Error al cargar los consumibles:', error);
-    }
-  };
-
-  const fetchCalculatorConfigs = async () => {
-    try {
-      console.log('Realizando solicitud a /api/calculadoras'); // Confirmar que se está llamando a la API
-      const response = await fetchWithAuth(`/api/calculadoras`);
-      if (!response.ok) throw new Error('Error al obtener las configuraciones de calculadora');
-      const data = await response.json();
-      console.log('Configuraciones de calculadora obtenidas:', data); // Verificar los datos
-      setCalculatorConfigs(data);
-    } catch (error) {
-      console.error('Error al cargar las configuraciones de calculadora:', error);
-    }
-  };
-
-  const fetchPrinterDetails = async (printerId) => {
-    try {
-      console.log(`Realizando solicitud a /api/impresoras/${printerId}`); // Confirmar que se está llamando a la API correcta
-      const response = await fetchWithAuth(`/api/impresoras/${printerId}`); // Asegúrate de usar la ruta correcta
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`Error en la respuesta del servidor: ${response.status} ${response.statusText}`, errorText);
-        throw new Error(`Error en la respuesta del servidor: ${response.status} ${response.statusText}`);
-      }
-      const data = await response.json();
-      console.log('Datos de la impresora recibidos del servidor:', data); // Verificar los datos recibidos
-      setSelectedPrinterDetails(data); // Actualizar el estado con los detalles de la impresora
-    } catch (error) {
-      console.error('Error al cargar los detalles de la impresora:', error);
-    }
-  };
-
-  const fetchConsumableDetails = async (consumableId) => {
-    try {
-      console.log(`Realizando solicitud a /api/utilizables/${consumableId}`); // Confirmar que se está llamando a la API
-      const response = await fetchWithAuth(`/api/utilizables/${consumableId}`);
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`Error en la respuesta del servidor: ${response.status} ${response.statusText}`, errorText);
-        throw new Error(`Error en la respuesta del servidor: ${response.status} ${response.statusText}`);
-      }
-      const data = await response.json();
-      console.log('Datos del consumible recibidos del servidor:', data); // Verificar los datos recibidos
-      setSelectedConsumableId(data); // Actualizar el estado con los detalles del consumible
-      setShowConsumableDetails(true); // Mostrar el modal
-    } catch (error) {
-      console.error('Error al cargar los detalles del consumible:', error);
-    }
-  };
-
-  const fetchCalculatorDetails = async (calculatorId) => {
-    try {
-      console.log(`Realizando solicitud a /api/calculadoras/${calculatorId}`); // Depuración
-      const response = await fetchWithAuth(`/api/calculadoras/${calculatorId}`);
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`Error en la respuesta del servidor: ${response.status} ${response.statusText}`, errorText);
-        throw new Error(`Error en la respuesta del servidor: ${response.status} ${response.statusText}`);
-      }
-      const data = await response.json();
-      console.log('Datos de la configuración recibidos del servidor:', data); // Depuración
-      setSelectedCalculatorDetails(data); // Actualizar el estado con los detalles de la configuración
-    } catch (error) {
-      console.error('Error al cargar los detalles de la configuración:', error);
-    }
-  };
-
-  const fetchQuoteDetails = async (quoteId) => {
-    try {
-      console.log(`Realizando solicitud a /api/cotizaciones/${quoteId}`); // Depuración
-      const response = await fetchWithAuth(`/api/cotizaciones/${quoteId}`);
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`Error en la respuesta del servidor: ${response.status} ${response.statusText}`, errorText);
-        throw new Error(`Error en la respuesta del servidor: ${response.status} ${response.statusText}`);
-      }
-      const data = await response.json();
-      console.log('Datos de la cotización recibidos del servidor:', data); // Depuración
-      setSelectedQuoteDetails(data); // Actualizar el estado con los detalles de la cotización
-      setShowQuoteRequest(true); // Mostrar el modal de edición
-    } catch (error) {
-      console.error('Error al cargar los detalles de la cotización:', error);
-    }
-  };
-
-  const fetchUsuarios = async () => {
-    try {
-      const response = await fetchWithAuth('/api/users'); // <-- minúsculas
-      const errorText = !response.ok ? await response.text() : '';
-      console.error(
-        `[fetchUsuarios] status: ${response.status} ${response.statusText}`,
-        errorText
-      );
-      if (!response.ok) throw new Error(`Error al obtener usuarios: ${response.status} ${response.statusText} - ${errorText}`);
-      const data = await response.json();
-      setUsuarios(data);
-    } catch (error) {
-      console.error('Error al cargar usuarios:', error);
-    }
-  };
-
-  const fetchPuestos = async () => {
-    try {
-      const response = await fetchWithAuth('/api/puestos');
-      if (!response.ok) throw new Error('Error al obtener los puestos');
-      const data = await response.json();
-      setPuestos(data);
-    } catch (error) {
-      console.error('Error al cargar los puestos:', error);
-    }
-  };
-
-  const fetchVentas = async () => {
-    try {
-      const response = await fetchWithAuth('/api/ventas');
-      if (!response.ok) throw new Error('Error al obtener las ventas');
-      const data = await response.json();
-      setVentas(data);
-    } catch (error) {
-      console.error('Error al cargar las ventas:', error);
-    }
-  };
-
-  const handleViewVenta = async (id) => {
-    const res = await fetch(`/api/ventas`);
-    const ventas = await res.json();
-    const venta = ventas.find(v => v.id === id);
-    setVentaViewData(venta);
-    setShowVentaView(true);
-  };
-
-  useEffect(() => {
-    if (activeTab === 'printer') {
-      fetchPrinters(); // Consultar las impresoras al cambiar a la pestaña "Impresoras"
-    } else if (activeTab === 'consumibles') {
-      fetchConsumables(); // Consultar los consumibles al cambiar a la pestaña "Consumibles"
-    } else if (activeTab === 'calculator') {
-      fetchCalculatorConfigs(); // Consultar las configuraciones al cambiar a la pestaña "Calculadora"
-    } else if (activeTab === 'puestos') {
-      fetchPuestos(); // Consultar los puestos al cambiar a la pestaña "Puestos"
-    } else if (activeTab === 'ventas') {
-      fetchVentas(); // Consultar las ventas al cambiar a la pestaña "Ventas"
-    }
-  }, [activeTab]);
-
-  useEffect(() => {
-    fetchPuestos();
-  }, []);
-
-  const handleTabChange = (tab) => {
-    setActiveTab(tab);
-    if (tab === 'quotes') {
-      fetchQuotes(); // Consultar las cotizaciones al cambiar a la pestaña "Cotizaciones"
-    }
-  };
-
-  const handleShowPrinterDetails = () => {
-    if (selectedPrinterId) {
-      setShowPrinterDetails(true); // Mostrar el modal
-    } else {
-      alert('Por favor selecciona una impresora.');
-    }
-  };
-
-  const handleClosePrinterDetails = () => setShowPrinterDetails(false);
-
-  const handlePrinterSelection = (event) => {
-    setSelectedPrinterId(event.target.value); // Actualizar el ID de la impresora seleccionada
-  };
-
-  const handleShowConsumableDetails = () => {
-    if (selectedConsumableId) {
-      setShowConsumableDetails(true); // Mostrar el modal
-    } else {
-      alert('Por favor selecciona un consumible.');
-    }
-  };
-
-  const handleCloseConsumableDetails = () => setShowConsumableDetails(false);
-
-  const handleConsumableSelection = (event) => {
-    setSelectedConsumableId(event.target.value); // Actualizar el ID del consumible seleccionado
-  };
-
-  const handleShowQuoteRequest = () => {
-    setSelectedQuoteDetails(null); // Asegurarse de que no haya datos de cotización seleccionados
-    setShowQuoteRequest(true); // Mostrar el modal de agregar cotización
-  };
-
-  const handleCloseQuoteRequest = () => setShowQuoteRequest(false);
-
-  const handleShowPrinterModal = () => {
-    setPrinterModalMode('add');
-    setPrinterEditData(null);
-    setShowPrinterModal(true);
-  };
-
-  const handleEditPrinter = async (id) => {
-    const res = await fetch(`/api/impresoras/${id}`);
-    const data = await res.json();
-    setPrinterModalMode('edit');
-    setPrinterEditData(data);
-    setShowPrinterModal(true);
-  };
-
-  const handleShowConsumableModal = () => {
-    setConsumableModalMode('add');
-    setConsumableEditData(null);
-    setShowConsumableModal(true);
-  };
-
-  const handleEditConsumable = async (id) => {
-    const res = await fetch(`/api/utilizables/${id}`);
-    const data = await res.json();
-    setConsumableModalMode('edit');
-    setConsumableEditData(data);
-    setShowConsumableModal(true);
-  };
-
-  const handleCloseConsumableModal = () => setShowConsumableModal(false); // Cerrar modal de agregar consumible
-
-  const handleShowCalculadoraAdd = () => setShowCalculadoraAdd(true); // Mostrar agregar calculadora
-  const handleCloseCalculadoraAdd = () => setShowCalculadoraAdd(false); // Cerrar agregar calculadora
-
-  const handleShowCalculadoraEdit = () => {
-    if (selectedCalculatorId) {
-      fetchCalculatorDetails(selectedCalculatorId); // Consultar los detalles de la configuración seleccionada
-      setShowCalculadoraEdit(true); // Mostrar el modal de edición
-    } else {
-      alert('Por favor selecciona una configuración.');
-    }
-  };
-
-  const handleCloseCalculadoraEdit = () => setShowCalculadoraEdit(false); // Cerrar editar calculadora
-
-  const handleShowCalculadoraConfigModal = () => {
-    setCalculadoraConfigModalMode('add');
-    setCalculadoraConfigEditData(null);
-    setShowCalculadoraConfigModal(true);
-  };
-
-  const handleEditCalculadoraConfig = async (id) => {
-    const res = await fetch(`/api/calculadoras/${id}`);
-    const data = await res.json();
-    setCalculadoraConfigModalMode('edit');
-    setCalculadoraConfigEditData(data);
-    setShowCalculadoraConfigModal(true);
-  };
-
-  const handleQuoteSelection = (event) => {
-    const selectedId = event.target.value;
-    const quote = quotes.find((q) => q.id === parseInt(selectedId, 10));
-    setSelectedQuote(quote);
-    setSelectedQuoteId(selectedId);
-  };
-
-  const handleShowQuoteModal = () => {
-    setQuoteModalMode('add');
-    setQuoteEditData(null);
-    setShowQuoteModal(true);
-  };
-
-  const handleEditQuote = async (id) => {
-    const res = await fetch(`/api/cotizaciones/${id}`);
-    const data = await res.json();
-    setQuoteModalMode('edit');
-    setQuoteEditData(data);
-    setShowQuoteModal(true);
-  };
-
-  const handleDeleteClick = (id, tabla) => {
-    setDeleteInfo({ id, tabla });
-    setShowBoorado(true);
-  };
-
-  const handleEditClick = (id, tabla) => {
-    if (tabla === 'users') {
-      setSelectedUserId(id);
-      setShowUserModal(true);
-    }
-  };
-
-  const handleAcceptDelete = async () => {
-    // Aquí puedes hacer la petición de borrado según la tabla
-    // Ejemplo:
-    // await fetch(`/api/${deleteInfo.tabla}/${deleteInfo.id}`, { method: 'DELETE' });
-    setShowBoorado(false);
-    setDeleteInfo({ id: null, tabla: null });
-    // Recargar datos si es necesario
-  };
-
-  const handleCancelDelete = () => {
-    setShowBoorado(false);
-    setDeleteInfo({ id: null, tabla: null });
-  };
-
-  const handleShowPuestoModal = () => {
-    setPuestoModalMode('add');
-    setPuestoEditData(null);
-    setShowPuestoModal(true);
-  };
-
-  const handleEditPuesto = async (id) => {
-    const res = await fetch(`/api/puestos/${id}`);
-    const data = await res.json();
-    setPuestoModalMode('edit');
-    setPuestoEditData(data);
-    setShowPuestoModal(true);
-  };
-
-  const getUtilizableNombre = (id) => {
-    // Asegura que id y x.id sean números para la comparación
-    const u = consumables.find(x => Number(x.id) === Number(id));
-    return u ? u.nombre : id;
-  };
-
-  const getImpresoraNombre = (id) => {
-    const i = printers.find(x => x.id === id);
-    return i ? i.nombre : id;
-  };
-
-  const getPuestoNombre = (id) => {
-    const p = puestos.find(x => String(x.id) === String(id));
-    return p ? p.nombre : id;
-  };
-
-  const columnasTablas = {
-    impresoras: [
-      { key: 'id', label: 'ID' },
-      { key: 'nombre', label: 'Nombre' },
-      { key: 'tipo', label: 'Tipo' },
-      { key: 'costoPorHora', label: 'Costo Por Hora' },
-      { key: 'dimensiones', label: 'Dimensiones' },
-    ],
-    consumibles: [
-      { key: 'id', label: 'ID' },
-      { key: 'nombre', label: 'Nombre' },
-      { key: 'material', label: 'Material' },
-      { key: 'cantidad', label: 'Cantidad Total' },
-      { key: 'cantidadActual', label: 'Cantidad Actual' },
-      { key: 'costoDeCompra', label: 'Costo de Compra' },
-      { key: 'costoDeVenta', label: 'Venta por Gramo' },
-    ],
-    cotizaciones: [
-      { key: 'id', label: 'ID' },
-      { key: 'nombre', label: 'Nombre' },
-      { key: 'link', label: 'Link' },
-      { key: 'presupuesto', label: 'Presupuesto' },
-      { key: 'estatus', label: 'Estatus' },
-    ],
-    calculadoras: [
-      { key: 'id', label: 'ID' },
-      { key: 'nombre', label: 'Nombre' },
-      { key: 'utilizables', label: 'Consumibles' },
-      { key: 'impresora', label: 'Impresora' },
-    ],
-  };
-
-  const columnasPuestos = [
-    { key: 'id', label: 'ID' },
-    { key: 'nombre', label: 'Nombre' },
-    { key: 'descripcion', label: 'Descripción' },
-  ];
-
-  const columnasVentas = [
-    { key: 'id', label: 'ID' },
-    { key: 'nombre', label: 'Nombre' },
-    { key: 'costoTotal', label: 'Costo total' },
-  ];
-
-  const renderLinkCell = (col, fila) => {
-    if (col.key === 'link' && fila.link) {
-      return (
-        <a href={fila.link} target="_blank" rel="noopener noreferrer">
-          {fila.link}
-        </a>
-      );
-    }
-    return fila[col.key];
-  };
-
-  // Mapea calculatorConfigs para mostrar el nombre del consumible en la columna 'utilizables'
-  const calculatorConfigsWithNames = calculatorConfigs.map(cfg => ({
-    ...cfg,
-    utilizables: getUtilizableNombre(cfg.utilizablesId),
-    impresora: getImpresoraNombre(cfg.impresoraId),
-  }));
-
-  const renderCalculadoraCell = (col, fila) => {
-    if (col.key === 'nombre') {
-      return `Calculadora ${fila.id}`;
-    }
-    // Aquí, utilizables ya es el nombre, no el id
-    return fila[col.key];
-  };
-
-  const columnasUsuarios = [
-    { key: 'id', label: 'ID' }, // Mostrar el ID
-    { key: 'name', label: 'Nombre' },
-    { key: 'email', label: 'Email' },
-    { key: 'tipo', label: 'Tipo' },
-  ];
-
-  const renderUsuarioCell = (col, fila) => {
-    if (col.key === 'tipo') {
-      return getPuestoNombre(fila.tipo);
-    }
-    return fila[col.key];
-  };
-
-  const datosTabla = (() => {
-    switch (tablaSeleccionada) {
-      case 'impresoras':
-        return printers;
-      case 'consumibles':
-        return consumables;
-      case 'cotizaciones':
-        return quotes;
-      case 'calculadoras':
-        return calculatorConfigs;
-      default:
-        return [];
-    }
-  })();
+  const {
+    activeTab, setActiveTab, permisos, isTabDisabled,
+    showPrinterDetails, handleClosePrinterDetails, selectedPrinterId,
+    showConsumableDetails, handleCloseConsumableDetails, selectedConsumableId,
+    showQuoteRequest, handleCloseQuoteRequest, selectedQuoteDetails,
+    showCalculadoraAdd, handleCloseCalculadoraAdd,
+    showCalculadoraEdit, handleCloseCalculadoraEdit, selectedCalculatorDetails,
+    showPrinterModal, setShowPrinterModal, printerModalMode, printerEditData, fetchPrinters,
+    showConsumableModal, setShowConsumableModal, consumableModalMode, consumableEditData, fetchConsumables,
+    showQuoteModal, setShowQuoteModal, quoteModalMode, quoteEditData, fetchQuotes,
+    showCalculadoraConfigModal, setShowCalculadoraConfigModal, calculadoraConfigModalMode, calculadoraConfigEditData, fetchCalculatorConfigs,
+    showUserModal, setShowUserModal, selectedUserId, fetchUsuarios, puestos,
+    showPuestoModal, setShowPuestoModal, puestoModalMode, puestoEditData, fetchPuestos,
+    showBoorado, handleAcceptDelete, handleCancelDelete,
+    showVentaView, ventaViewData, setShowVentaView,
+    usuarios, handleDeleteClick, handleEditClick,
+    handleShowPuestoModal, handleEditPuesto,
+    printers, handleShowPrinterModal, handleEditPrinter,
+    consumables, handleShowConsumableModal, handleEditConsumable,
+    quotes, handleShowQuoteModal, handleEditQuote,
+    ventas, handleViewVenta,
+    calculatorConfigsWithNames, handleShowCalculadoraConfigModal, handleEditCalculadoraConfig,
+    columnasTablas, columnasPuestos, columnasVentas, columnasUsuarios,
+    renderLinkCell, renderCalculadoraCell, renderUsuarioCell,
+  } = logic;
 
   const renderContent = () => {
+    if (!permisos[activeTab]) {
+      return (
+        <div className="alert alert-danger mt-4">
+          Acceso denegado: No tienes permisos para ver esta sección.
+        </div>
+      );
+    }
     switch (activeTab) {
       case 'personal':
-        console.log('Renderizando usuarios:', usuarios); // Depuración
         return (
           <div>
             <h3 className="mt-4">Personal Participante</h3>
@@ -641,7 +131,6 @@ const Home = () => {
           </div>
         );
       case 'quotes':
-        console.log('Renderizando cotizaciones (quotes):', quotes); // Confirmar los datos que llegan a la tabla
         return (
           <div>
             <h3 className="mt-4">Cotizaciones</h3>
@@ -703,7 +192,6 @@ const Home = () => {
   return (
     <div className="container mt-3">
       <div className="row">
-        {/* Columna derecha: contenido principal */}
         <div className="col-md-12">
           <div className="d-flex justify-content-between align-items-center mb-3">
             <h2>Impresoras3D</h2>
@@ -711,7 +199,6 @@ const Home = () => {
               type="button"
               className="btn btn-secondary"
               onClick={() => {
-                // Eliminar la cookie del token al cerrar sesión
                 document.cookie = 'token=; path=/; max-age=0;';
                 navigate('/login');
               }}
@@ -720,126 +207,49 @@ const Home = () => {
             </button>
           </div>
           <ul className="nav nav-tabs" id="myTab" role="tablist">
-            <li className="nav-item">
-              <a
-                className={`nav-link ${activeTab === 'personal' ? 'active' : ''}`}
-                id="personal-tab"
-                data-bs-toggle="tab"
-                href="#personal"
-                role="tab"
-                aria-controls="personal"
-                aria-selected={activeTab === 'personal'}
-                onClick={() => {
-                  setActiveTab('personal');
-                  fetchUsuarios(); // Siempre consulta al pulsar la pestaña
-                }}
-              >
-                Personal Participante
-              </a>
-            </li>
-            <li className="nav-item">
-              <a
-                className={`nav-link ${activeTab === 'puestos' ? 'active' : ''}`}
-                id="puestos-tab"
-                data-bs-toggle="tab"
-                href="#puestos"
-                role="tab"
-                aria-controls="puestos"
-                aria-selected={activeTab === 'puestos'}
-                onClick={() => setActiveTab('puestos')}
-              >
-                Puestos
-              </a>
-            </li>
-            <li className="nav-item">
-              <a
-                className={`nav-link ${activeTab === 'printer' ? 'active' : ''}`}
-                id="printer-tab"
-                data-bs-toggle="tab"
-                href="#printer"
-                role="tab"
-                aria-controls="printer"
-                aria-selected={activeTab === 'printer'}
-                onClick={() => setActiveTab('printer')}
-              >
-                Impresoras
-              </a>
-            </li>
-            <li className="nav-item">
-              <a
-                className={`nav-link ${activeTab === 'consumibles' ? 'active' : ''}`}
-                id="consumibles-tab"
-                data-bs-toggle="tab"
-                href="#consumibles"
-                role="tab"
-                aria-controls="consumibles"
-                aria-selected={activeTab === 'consumibles'}
-                onClick={() => setActiveTab('consumibles')}
-              >
-                Consumibles
-              </a>
-            </li>
-            <li className="nav-item">
-              <a
-                className={`nav-link ${activeTab === 'quotes' ? 'active' : ''}`}
-                id="quotes-tab"
-                data-bs-toggle="tab"
-                href="#quotes"
-                role="tab"
-                aria-controls="quotes"
-                aria-selected={activeTab === 'quotes'}
-                onClick={() => handleTabChange('quotes')}
-              >
-                Cotizaciones
-              </a>
-            </li>
-            <li className="nav-item">
-              <a
-                className={`nav-link ${activeTab === 'calculator' ? 'active' : ''}`}
-                id="calculator-tab"
-                data-bs-toggle="tab"
-                href="#calculator"
-                role="tab"
-                aria-controls="calculator"
-                aria-selected={activeTab === 'calculator'}
-                onClick={() => handleTabChange('calculator')}
-              >
-                Calculadora
-              </a>
-            </li>
-            <li className="nav-item">
-              <a
-                className={`nav-link ${activeTab === 'ventas' ? 'active' : ''}`}
-                id="ventas-tab"
-                data-bs-toggle="tab"
-                href="#ventas"
-                role="tab"
-                aria-controls="ventas"
-                aria-selected={activeTab === 'ventas'}
-                onClick={() => setActiveTab('ventas')}
-              >
-                Ventas
-              </a>
-            </li>
+            {['personal', 'puestos', 'printer', 'consumibles', 'quotes', 'calculator', 'ventas'].map(tab => (
+              <li className="nav-item" key={tab}>
+                <a
+                  className={`nav-link ${activeTab === tab ? 'active' : ''} ${isTabDisabled(tab) ? 'disabled-tab' : ''}`}
+                  id={`${tab}-tab`}
+                  data-bs-toggle="tab"
+                  href={`#${tab}`}
+                  role="tab"
+                  aria-controls={tab}
+                  aria-selected={activeTab === tab}
+                  tabIndex={isTabDisabled(tab) ? -1 : 0}
+                  aria-disabled={isTabDisabled(tab)}
+                  onClick={e => {
+                    if (isTabDisabled(tab)) {
+                      e.preventDefault();
+                      return;
+                    }
+                    setActiveTab(tab);
+                  }}
+                  style={isTabDisabled(tab) ? { pointerEvents: 'none', opacity: 0.5 } : {}}
+                >
+                  {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                </a>
+              </li>
+            ))}
           </ul>
           <div className="tab-content" id="myTabContent">
             {renderContent()}
           </div>
         </div>
       </div>
-      {/* Modales */}
       {showPrinterDetails && (
         <PrinterDetails
           showModal={showPrinterDetails}
           handleClose={handleClosePrinterDetails}
-          selectedPrinterId={selectedPrinterId} // Pasar el ID seleccionado al modal
+          selectedPrinterId={selectedPrinterId}
         />
       )}
       {showConsumableDetails && (
         <ConsumableDetails
           showModal={showConsumableDetails}
           handleClose={handleCloseConsumableDetails}
-          selectedConsumableId={selectedConsumableId} // Pasar el ID seleccionado al modal
+          selectedConsumableId={selectedConsumableId}
         />
       )}
       {showQuoteRequest && !selectedQuoteDetails && (
@@ -853,7 +263,7 @@ const Home = () => {
           showModal={showQuoteRequest}
           handleClose={handleCloseQuoteRequest}
           mode="edit"
-          quoteData={selectedQuoteDetails} // Pasar los detalles de la cotización al modal
+          quoteData={selectedQuoteDetails}
         />
       )}
       {showCalculadoraAdd && (
@@ -868,7 +278,7 @@ const Home = () => {
           showModal={showCalculadoraEdit}
           handleClose={handleCloseCalculadoraEdit}
           mode="edit"
-          calculatorData={selectedCalculatorDetails} // Pasar los detalles de la configuración al modal
+          calculatorData={selectedCalculatorDetails}
         />
       )}
       <PrinterModal

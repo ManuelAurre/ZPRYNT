@@ -2,12 +2,20 @@ const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const path = require('path');
+const multer = require('multer');
 
 const app = express();
 const prisma = new PrismaClient();
 
 app.use(cors());
 app.use(bodyParser.json());
+
+// Servir la carpeta de imágenes como estática
+app.use('/img', express.static(path.join(__dirname, 'src', 'Img')));
+
+// Configuración de multer para guardar imágenes en memoria
+const upload = multer(); // No uses diskStorage, solo memoria
 
 app.post('/register', async (req, res) => {
   const { name, email, password, tipo, edad } = req.body;
@@ -34,12 +42,39 @@ app.post('/login', async (req, res) => {
       where: { email }
     });
     if (user && user.password === password) {
-      res.status(200).send('Login successful');
+      // Devuelve el usuario completo, incluyendo el id de puesto/tipo
+      res.status(200).json({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        tipo: user.tipo,
+        edad: user.edad
+      });
     } else {
       res.status(401).send('Invalid credentials');
     }
   } catch (error) {
     res.status(500).send('Error logging in');
+  }
+});
+
+// Endpoint para obtener el usuario actual (para Home.jsx)
+app.get('/api/users/me', async (req, res) => {
+  // Aquí deberías obtener el usuario a partir del token, pero para pruebas:
+  // Por ejemplo, si usas sesiones o JWT, aquí deberías decodificar el token.
+  // Por ahora, simula con el primer usuario:
+  try {
+    const user = await prisma.user.findFirst();
+    if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
+    res.json({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      tipo: user.tipo,
+      edad: user.edad
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener el usuario actual' });
   }
 });
 
@@ -157,14 +192,12 @@ app.delete('/api/calculadoras/:id', async (req, res) => {
   }
 });
 
-// Ruta para registrar una nueva impresora
-app.post('/api/impresoras', async (req, res) => {
-  console.log('Solicitud recibida en /api/impresoras:', req.body);
-
-  const { nombre, tipo, imagen, velocidad, costoPorHora, dimensiones } = req.body;
+// Ruta para registrar una nueva impresora (imagen como BLOB)
+app.post('/api/impresoras', upload.single('imagen'), async (req, res) => {
+  const { nombre, tipo, velocidad, costoPorHora, dimensiones } = req.body;
+  const imagen = req.file ? req.file.buffer : null;
 
   if (!nombre || !tipo || !imagen || !velocidad || !costoPorHora || !dimensiones) {
-    console.error('Faltan campos obligatorios');
     return res.status(400).json({ error: 'Todos los campos son obligatorios.' });
   }
 
@@ -173,36 +206,35 @@ app.post('/api/impresoras', async (req, res) => {
       data: {
         nombre,
         tipo,
-        imagen,
+        imagen, // Buffer
         velocidad: parseFloat(velocidad),
         costoPorHora: costoPorHora.toString(),
         dimensiones,
       },
     });
-
-    console.log('Impresora registrada:', impresora);
-    res.status(201).json({ message: 'Impresora registrada exitosamente.', impresora });
+    res.status(201).json({ message: 'Impresora registrada exitosamente.', impresora: { ...impresora, imagen: undefined } });
   } catch (error) {
-    console.error('Error al registrar la impresora:', error);
-    res.status(500).json({ error: 'Error al registrar la impresora. Verifica el modelo en schema.prisma y las migraciones.' });
+    res.status(500).json({ error: 'Error al registrar la impresora.' });
   }
 });
 
-// Ruta para obtener los detalles de una impresora específica
+// Ruta para obtener los detalles de una impresora específica (imagen base64)
 app.get('/api/impresoras/:id', async (req, res) => {
   const { id } = req.params;
   try {
-    console.log(`Consulta recibida para impresora con ID: ${id}`); // Depuración
     const impresora = await prisma.impresora.findUnique({
       where: { id: parseInt(id, 10) },
     });
     if (!impresora) {
       return res.status(404).json({ error: 'Impresora no encontrada' });
     }
-    console.log('Datos de la impresora obtenidos:', impresora); // Depuración
-    res.json(impresora);
+    // Convierte el buffer a base64 para el frontend
+    const impresoraConImagen = {
+      ...impresora,
+      imagen: impresora.imagen ? impresora.imagen.toString('base64') : null
+    };
+    res.json(impresoraConImagen);
   } catch (error) {
-    console.error('Error al obtener los detalles de la impresora:', error);
     res.status(500).json({ error: 'Error al obtener los detalles de la impresora' });
   }
 });
@@ -228,26 +260,28 @@ app.get('/api/impresoras', async (req, res) => {
   }
 });
 
-// Ruta para actualizar una impresora
-app.put('/api/impresoras/:id', async (req, res) => {
+// Ruta para actualizar una impresora (imagen como BLOB)
+app.put('/api/impresoras/:id', upload.single('imagen'), async (req, res) => {
   const { id } = req.params;
-  const { nombre, tipo, imagen, velocidad, costoPorHora, dimensiones } = req.body;
+  const { nombre, tipo, velocidad, costoPorHora, dimensiones } = req.body;
+  const imagen = req.file ? req.file.buffer : undefined;
 
   try {
+    const data = {
+      nombre,
+      tipo,
+      velocidad: parseFloat(velocidad),
+      costoPorHora: costoPorHora !== undefined && costoPorHora !== null ? costoPorHora.toString() : undefined,
+      dimensiones,
+    };
+    if (imagen) data.imagen = imagen;
+
     const impresora = await prisma.impresora.update({
       where: { id: parseInt(id, 10) },
-      data: {
-        nombre,
-        tipo,
-        imagen,
-        velocidad: parseFloat(velocidad),
-        costoPorHora: costoPorHora !== undefined && costoPorHora !== null ? costoPorHora.toString() : undefined,
-        dimensiones,
-      },
+      data,
     });
-    res.json({ message: 'Impresora actualizada exitosamente.', impresora });
+    res.json({ message: 'Impresora actualizada exitosamente.', impresora: { ...impresora, imagen: undefined } });
   } catch (error) {
-    console.error('Error al actualizar la impresora:', error);
     res.status(500).json({ error: 'Error al actualizar la impresora.' });
   }
 });
@@ -266,11 +300,12 @@ app.delete('/api/impresoras/:id', async (req, res) => {
   }
 });
 
-// Ruta para registrar un nuevo consumible
-app.post('/api/utilizables', async (req, res) => {
+// Ruta para registrar un nuevo consumible (con imagen BLOB)
+app.post('/api/utilizables', upload.single('imagen'), async (req, res) => {
   console.log('Solicitud recibida en /api/utilizables:', req.body);
 
   const { nombre, cantidad, cantidadActual, tipo, material, costoDeCompra, costoDeVenta } = req.body;
+  const imagen = req.file ? req.file.buffer : null;
 
   if (!nombre || !cantidad || !tipo || !material || !costoDeCompra || !costoDeVenta) {
     console.error('Faltan campos obligatorios');
@@ -282,23 +317,24 @@ app.post('/api/utilizables', async (req, res) => {
       data: {
         nombre,
         cantidad: parseFloat(cantidad),
-        cantidadActual: parseFloat(cantidadActual), // Se espera que cantidadActual sea igual a cantidad
+        cantidadActual: parseFloat(cantidadActual),
         tipo,
         material,
         costoDeCompra,
         costoDeVenta,
+        imagen, // Buffer
       },
     });
 
     console.log('Consumible registrado:', consumible);
-    res.status(201).json({ message: 'Consumible registrado exitosamente.', consumible });
+    res.status(201).json({ message: 'Consumible registrado exitosamente.', consumible: { ...consumible, imagen: undefined } });
   } catch (error) {
     console.error('Error al registrar el consumible:', error);
     res.status(500).json({ error: 'Error al registrar el consumible. Verifica el modelo en schema.prisma y las migraciones.' });
   }
 });
 
-// Ruta para obtener los detalles de un consumible específico
+// Ruta para obtener los detalles de un consumible específico (imagen base64)
 app.get('/api/utilizables/:id', async (req, res) => {
   let { id } = req.params;
   try {
@@ -314,8 +350,12 @@ app.get('/api/utilizables/:id', async (req, res) => {
     if (!consumible) {
       return res.status(404).json({ error: 'Consumible no encontrado' });
     }
-    console.log('Datos del consumible obtenidos:', consumible); // Depuración
-    res.json(consumible);
+    const consumibleConImagen = {
+      ...consumible,
+      imagen: consumible.imagen ? consumible.imagen.toString('base64') : null
+    };
+    console.log('Datos del consumible obtenidos:', consumibleConImagen); // Depuración
+    res.json(consumibleConImagen);
   } catch (error) {
     console.error('Error al obtener los detalles del consumible:', error);
     res.status(500).json({ error: 'Error al obtener los detalles del consumible' });
@@ -345,25 +385,29 @@ app.get('/api/utilizables', async (req, res) => {
   }
 });
 
-// Ruta para actualizar un consumible
-app.put('/api/utilizables/:id', async (req, res) => {
+// Ruta para actualizar un consumible (con imagen BLOB)
+app.put('/api/utilizables/:id', upload.single('imagen'), async (req, res) => {
   const { id } = req.params;
   const { nombre, cantidad, cantidadActual, costoDeCompra, costoDeVenta, tipo, material } = req.body;
+  const imagen = req.file ? req.file.buffer : undefined;
 
   try {
+    const data = {
+      nombre,
+      cantidad: parseFloat(cantidad),
+      cantidadActual: cantidadActual !== undefined && cantidadActual !== null ? parseFloat(cantidadActual) : undefined,
+      costoDeCompra: costoDeCompra.toString(),
+      costoDeVenta: costoDeVenta.toString(),
+      tipo,
+      material,
+    };
+    if (imagen) data.imagen = imagen;
+
     const consumible = await prisma.utilizables.update({
       where: { id: parseInt(id, 10) },
-      data: {
-        nombre,
-        cantidad: parseFloat(cantidad),
-        cantidadActual: cantidadActual !== undefined && cantidadActual !== null ? parseFloat(cantidadActual) : undefined,
-        costoDeCompra: costoDeCompra.toString(),
-        costoDeVenta: costoDeVenta.toString(),
-        tipo,
-        material,
-      },
+      data,
     });
-    res.json({ message: 'Consumible actualizado exitosamente.', consumible });
+    res.json({ message: 'Consumible actualizado exitosamente.', consumible: { ...consumible, imagen: undefined } });
   } catch (error) {
     console.error('Error al actualizar el consumible:', error);
     res.status(500).json({ error: 'Error al actualizar el consumible.' });

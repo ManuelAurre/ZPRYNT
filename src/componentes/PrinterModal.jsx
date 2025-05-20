@@ -10,19 +10,29 @@ const PrinterModal = ({ showModal, handleClose, mode = 'add', printerData, onSav
     costoPorHora: '',
     dimensiones: ''
   });
+  const [imagenFile, setImagenFile] = useState(null);
+  const [imagenPreview, setImagenPreview] = useState('');
 
   useEffect(() => {
     if (mode === 'edit' && printerData) {
       setForm({
         nombre: printerData.nombre || '',
         tipo: printerData.tipo || '',
-        imagen: printerData.imagen || '',
+        imagen: '', // No se usa el nombre, sino el base64
         velocidad: printerData.velocidad ? String(printerData.velocidad) : '',
         costoPorHora: printerData.costoPorHora ? String(printerData.costoPorHora) : '',
         dimensiones: printerData.dimensiones || ''
       });
+      if (printerData.imagen) {
+        setImagenPreview(`data:image/*;base64,${printerData.imagen}`);
+      } else {
+        setImagenPreview('');
+      }
+      setImagenFile(null);
     } else if (mode === 'add') {
       setForm({ nombre: '', tipo: '', imagen: '', velocidad: '', costoPorHora: '', dimensiones: '' });
+      setImagenPreview('');
+      setImagenFile(null);
     }
   }, [mode, printerData, showModal]);
 
@@ -30,19 +40,41 @@ const PrinterModal = ({ showModal, handleClose, mode = 'add', printerData, onSav
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  const handleImagenChange = e => {
+    const file = e.target.files[0];
+    setImagenFile(file);
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagenPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setImagenPreview('');
+    }
+  };
+
   const handleSubmit = async e => {
     e.preventDefault();
+    const formData = new FormData();
+    formData.append('nombre', form.nombre);
+    formData.append('tipo', form.tipo);
+    formData.append('velocidad', form.velocidad);
+    formData.append('costoPorHora', form.costoPorHora);
+    formData.append('dimensiones', form.dimensiones);
+    if (imagenFile) {
+      formData.append('imagen', imagenFile);
+    }
+
     if (mode === 'add') {
       await fetch('/api/impresoras', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form)
+        body: formData
       });
     } else if (mode === 'edit' && printerData?.id) {
       await fetch(`/api/impresoras/${printerData.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form)
+        body: formData
       });
     }
     if (onSaved) onSaved();
@@ -83,50 +115,63 @@ const PrinterModal = ({ showModal, handleClose, mode = 'add', printerData, onSav
               required
             />
           </div>
+          {/* Velocidad, Costo Por Hora y Dimensiones en la misma línea */}
+          <div className="form-group mt-2" style={{ display: 'flex', gap: '1rem' }}>
+            <div style={{ flex: 1 }}>
+              <label style={{ textAlign: 'left', display: 'block' }}>Velocidad: </label>
+              <input
+                className="form-control"
+                name="velocidad"
+                value={form.velocidad}
+                onChange={handleChange}
+                type="number"
+                min="0"
+                required
+              />
+            </div>
+            <div style={{ flex: 1 }}>
+              <label style={{ textAlign: 'left', display: 'block' }}>Costo Por Hora: </label>
+              <input
+                className="form-control"
+                name="costoPorHora"
+                value={form.costoPorHora}
+                onChange={handleChange}
+                type="number"
+                min="0"
+                required
+              />
+            </div>
+            <div style={{ flex: 1 }}>
+              <label style={{ textAlign: 'left', display: 'block' }}>Dimensiones: </label>
+              <input
+                className="form-control"
+                name="dimensiones"
+                value={form.dimensiones}
+                onChange={handleChange}
+                required
+              />
+            </div>
+          </div>
+          {/* Campo de imagen al final */}
           <div className="form-group mt-2">
             <label style={{ textAlign: 'left', display: 'block' }}>Imagen: </label>
             <input
               className="form-control"
               name="imagen"
-              value={form.imagen}
-              onChange={handleChange}
-              required
+              type="file"
+              accept="image/*"
+              onChange={handleImagenChange}
             />
           </div>
-          <div className="form-group mt-2">
-            <label style={{ textAlign: 'left', display: 'block' }}>Velocidad: </label>
-            <input
-              className="form-control"
-              name="velocidad"
-              value={form.velocidad}
-              onChange={handleChange}
-              type="number"
-              min="0"
-              required
-            />
-          </div>
-          <div className="form-group mt-2">
-            <label style={{ textAlign: 'left', display: 'block' }}>Costo Por Hora: </label>
-            <input
-              className="form-control"
-              name="costoPorHora"
-              value={form.costoPorHora}
-              onChange={handleChange}
-              type="number"
-              min="0"
-              required
-            />
-          </div>
-          <div className="form-group mt-2">
-            <label style={{ textAlign: 'left', display: 'block' }}>Dimensiones: </label>
-            <input
-              className="form-control"
-              name="dimensiones"
-              value={form.dimensiones}
-              onChange={handleChange}
-              required
-            />
-          </div>
+          {imagenPreview && (
+            <div className="form-group mt-2" style={{ textAlign: 'center' }}>
+              <img
+                src={imagenPreview}
+                alt="Vista previa"
+                style={{ maxWidth: '200px', maxHeight: '200px', marginTop: '10px', borderRadius: '8px', border: '1px solid #ccc' }}
+              />
+            </div>
+          )}
           <div className="boorado-modal-buttons mt-3">
             <button type="submit" className="btn-morado">
               {mode === 'add' ? 'Agregar' : 'Guardar'}

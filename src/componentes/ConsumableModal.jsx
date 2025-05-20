@@ -11,6 +11,8 @@ const ConsumableModal = ({ showModal, handleClose, mode = 'add', consumableData,
     costoDeCompra: '',
     costoDeVenta: ''
   });
+  const [imagenFile, setImagenFile] = useState(null);
+  const [imagenPreview, setImagenPreview] = useState('');
 
   useEffect(() => {
     if (mode === 'edit' && consumableData) {
@@ -23,8 +25,16 @@ const ConsumableModal = ({ showModal, handleClose, mode = 'add', consumableData,
         costoDeCompra: consumableData.costoDeCompra || '',
         costoDeVenta: consumableData.costoDeVenta || ''
       });
+      if (consumableData.imagen) {
+        setImagenPreview(`data:image/*;base64,${consumableData.imagen}`);
+      } else {
+        setImagenPreview('');
+      }
+      setImagenFile(null);
     } else if (mode === 'add') {
       setForm({ nombre: '', cantidad: '', cantidadActual: '', tipo: '', material: '', costoDeCompra: '', costoDeVenta: '' });
+      setImagenPreview('');
+      setImagenFile(null);
     }
   }, [mode, consumableData, showModal]);
 
@@ -32,19 +42,43 @@ const ConsumableModal = ({ showModal, handleClose, mode = 'add', consumableData,
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  const handleImagenChange = e => {
+    const file = e.target.files[0];
+    setImagenFile(file);
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagenPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setImagenPreview('');
+    }
+  };
+
   const handleSubmit = async e => {
     e.preventDefault();
+    const formData = new FormData();
+    formData.append('nombre', form.nombre);
+    formData.append('cantidad', form.cantidad);
+    formData.append('cantidadActual', form.cantidadActual);
+    formData.append('tipo', form.tipo);
+    formData.append('material', form.material);
+    formData.append('costoDeCompra', form.costoDeCompra);
+    formData.append('costoDeVenta', form.costoDeVenta);
+    if (imagenFile) {
+      formData.append('imagen', imagenFile);
+    }
+
     if (mode === 'add') {
       await fetch('/api/utilizables', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form)
+        body: formData
       });
     } else if (mode === 'edit' && consumableData?.id) {
       await fetch(`/api/utilizables/${consumableData.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form)
+        body: formData
       });
     }
     if (onSaved) onSaved();
@@ -75,70 +109,103 @@ const ConsumableModal = ({ showModal, handleClose, mode = 'add', consumableData,
               required
             />
           </div>
+          {/* Cantidad y Cantidad Actual en la misma línea */}
+          <div className="form-group mt-2" style={{ display: 'flex', gap: '1rem' }}>
+            <div style={{ flex: 1 }}>
+              <label style={{ textAlign: 'left', display: 'block' }}>Cantidad: </label>
+              <input
+                className="form-control"
+                name="cantidad"
+                value={form.cantidad}
+                onChange={handleChange}
+                type="number"
+                min="0"
+                required
+              />
+            </div>
+            <div style={{ flex: 1 }}>
+              <label style={{ textAlign: 'left', display: 'block' }}>Cantidad Actual: </label>
+              <input
+                className="form-control"
+                name="cantidadActual"
+                value={form.cantidadActual}
+                onChange={handleChange}
+                type="number"
+                min="0"
+                required
+              />
+            </div>
+          </div>
+          {/* Tipo y Material en la misma línea */}
+          <div className="form-group mt-2" style={{ display: 'flex', gap: '1rem' }}>
+            <div style={{ flex: 1 }}>
+              <label style={{ textAlign: 'left', display: 'block' }}>Tipo: </label>
+              <input
+                className="form-control"
+                name="tipo"
+                value={form.tipo}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div style={{ flex: 1 }}>
+              <label style={{ textAlign: 'left', display: 'block' }}>Material: </label>
+              <input
+                className="form-control"
+                name="material"
+                value={form.material}
+                onChange={handleChange}
+                required
+              />
+            </div>
+          </div>
+          {/* Costo de Compra y Costo de Venta en la misma línea */}
+          <div className="form-group mt-2" style={{ display: 'flex', gap: '1rem' }}>
+            <div style={{ flex: 1 }}>
+              <label style={{ textAlign: 'left', display: 'block' }}>Costo de Compra: </label>
+              <input
+                className="form-control"
+                name="costoDeCompra"
+                value={form.costoDeCompra}
+                onChange={handleChange}
+                type="number"
+                min="0"
+                required
+              />
+            </div>
+            <div style={{ flex: 1 }}>
+              <label style={{ textAlign: 'left', display: 'block' }}>Costo de Venta: </label>
+              <input
+                className="form-control"
+                name="costoDeVenta"
+                value={form.costoDeVenta}
+                onChange={handleChange}
+                type="number"
+                min="0"
+                required
+              />
+            </div>
+          </div>
+          {/* Campo de imagen al final */}
           <div className="form-group mt-2">
-            <label style={{ textAlign: 'left', display: 'block' }}>Cantidad: </label>
+            <label style={{ textAlign: 'left', display: 'block' }}>Imagen: </label>
             <input
               className="form-control"
-              name="cantidad"
-              value={form.cantidad}
-              onChange={handleChange}
-              type="number"
-              min="0"
-              required
+              name="imagen"
+              type="file"
+              accept="image/*"
+              onChange={handleImagenChange}
             />
           </div>
-          <div className="form-group mt-2">
-            <label style={{ textAlign: 'left', display: 'block' }}>Cantidad Actual: </label>
-            <input
-              className="form-control"
-              name="cantidadActual"
-              value={form.cantidadActual}
-              onChange={handleChange}
-              type="number"
-              min="0"
-              required
-            />
-          </div>
-          <div className="form-group mt-2">
-            <label style={{ textAlign: 'left', display: 'block' }}>Tipo: </label>
-            <input
-              className="form-control"
-              name="tipo"
-              value={form.tipo}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div className="form-group mt-2">
-            <label style={{ textAlign: 'left', display: 'block' }}>Material: </label>
-            <input
-              className="form-control"
-              name="material"
-              value={form.material}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div className="form-group mt-2">
-            <label style={{ textAlign: 'left', display: 'block' }}>Costo de Compra: </label>
-            <input
-              className="form-control"
-              name="costoDeCompra"
-              value={form.costoDeCompra}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div className="form-group mt-2">
-            <label style={{ textAlign: 'left', display: 'block' }}>Costo de Venta: </label>
-            <input
-              className="form-control"
-              name="costoDeVenta"
-              value={form.costoDeVenta}
-              onChange={handleChange}
-              required
-            />
-          </div>
+          {imagenPreview && (
+            <div className="form-group mt-2" style={{ textAlign: 'center' }}>
+              <img
+                src={imagenPreview}
+                alt="Vista previa"
+                style={{ maxWidth: '200px', maxHeight: '200px', marginTop: '10px', borderRadius: '8px', border: '1px solid #ccc' }}
+              />
+            </div>
+          )}
           <div className="boorado-modal-buttons mt-3">
             <button type="submit" className="btn-morado">
               {mode === 'add' ? 'Agregar' : 'Guardar'}

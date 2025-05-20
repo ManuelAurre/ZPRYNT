@@ -20,7 +20,7 @@ model Impresora {
   id              Int     @id @default(autoincrement())
   nombre          String
   tipo            String
-  imagen          String
+  imagen          Bytes?
   velocidad       Float
   dimensiones     String?
   costoPorHora    String?
@@ -53,6 +53,7 @@ model Utilizables {
   material        String
   costoDeCompra   String
   costoDeVenta    String?
+  imagen          Bytes?
 }
 
 model ConfiguracionCalculadora {
