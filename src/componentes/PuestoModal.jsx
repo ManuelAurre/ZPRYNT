@@ -8,6 +8,8 @@ const PuestoModal = ({ showModal, handleClose, mode = 'add', puestoData, onSaved
     descripcion: '',
   });
 
+  const [visible, setVisible] = useState(false);
+
   useEffect(() => {
     if (mode === 'edit' && puestoData) {
       setForm({
@@ -25,6 +27,11 @@ const PuestoModal = ({ showModal, handleClose, mode = 'add', puestoData, onSaved
       });
     }
   }, [mode, puestoData, showModal]);
+
+  useEffect(() => {
+    if (showModal) setVisible(true);
+    else if (visible) setTimeout(() => setVisible(false), 250);
+  }, [showModal]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -49,11 +56,11 @@ const PuestoModal = ({ showModal, handleClose, mode = 'add', puestoData, onSaved
     handleClose();
   };
 
-  if (!showModal) return null;
+  if (!showModal && !visible) return null;
 
   return (
     <div className="boorado-modal-backdrop">
-      <div className="boorado-modal">
+      <div className={`boorado-modal ${showModal ? 'fade-in' : 'fade-out'}`}>
         <div className="boorado-modal-header">
           <h4 className="boorado-modal-header-left" style={{ margin: 0 }}>
             {mode === 'add' ? 'Agregar Puesto' : 'Editar Puesto'}

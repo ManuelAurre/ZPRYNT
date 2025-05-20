@@ -1,10 +1,18 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 
 const VentaViewModal = ({ show, onHide, venta }) => {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (show) setVisible(true);
+    else if (visible) setTimeout(() => setVisible(false), 250);
+  }, [show]);
+
+  if (!show && !visible) return null;
   if (!venta) return null;
   return (
-    <Modal show={show} onHide={onHide} centered>
+    <Modal show={show || visible} onHide={onHide} centered dialogClassName={show ? 'fade-in' : 'fade-out'}>
       <Modal.Header closeButton>
         <Modal.Title style={{ width: '100%', textAlign: 'center', letterSpacing: 2 }}>
           TICKET DE VENTA

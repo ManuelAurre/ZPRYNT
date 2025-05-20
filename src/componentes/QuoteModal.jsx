@@ -22,6 +22,7 @@ const QuoteModal = ({ showModal, handleClose, mode = 'add', quoteData, onSaved }
   });
 
   const [calculadoras, setCalculadoras] = useState([]);
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     // Cargar opciones de calculadora desde la tabla de calculadoras
@@ -65,6 +66,11 @@ const QuoteModal = ({ showModal, handleClose, mode = 'add', quoteData, onSaved }
       });
     }
   }, [mode, quoteData, showModal]);
+
+  useEffect(() => {
+    if (showModal) setVisible(true);
+    else if (visible) setTimeout(() => setVisible(false), 250);
+  }, [showModal]);
 
   const handleChange = e => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -193,11 +199,11 @@ const QuoteModal = ({ showModal, handleClose, mode = 'add', quoteData, onSaved }
     }
   };
 
-  if (!showModal) return null;
+  if (!showModal && !visible) return null;
 
   return (
     <div className="boorado-modal-backdrop">
-      <div className="boorado-modal">
+      <div className={`boorado-modal ${showModal ? 'fade-in' : 'fade-out'}`}>
         <div className="boorado-modal-header">
           <h4 className="boorado-modal-header-left" style={{ margin: 0 }}>
             {mode === 'add' ? 'Agregar Cotización' : 'Editar Cotización'}

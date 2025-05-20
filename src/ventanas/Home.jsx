@@ -192,153 +192,155 @@ const Home = () => {
   };
 
   return (
-    <div className="container mt-3">
-      <div className="row">
-        <div className="col-md-12">
-          <Titulo
-            onSalir={() => {
-              document.cookie = 'token=; path=/; max-age=0;';
-              navigate('/login');
-            }}
-            usuario={currentUser?.name}
-          />
-          <ul className="nav nav-tabs" id="myTab" role="tablist">
-            {[
-              { key: 'personal', label: 'Personal Participante' },
-              { key: 'puestos', label: 'Puestos' },
-              { key: 'printer', label: 'Impresoras' },
-              { key: 'consumibles', label: 'Consumibles' },
-              { key: 'quotes', label: 'Cotizaciones' },
-              { key: 'calculator', label: 'Configuracion' },
-              { key: 'ventas', label: 'Ventas' }
-            ].map(tab => (
-              <li className="nav-item" key={tab.key}>
-                <a
-                  className={`nav-link ${activeTab === tab.key ? 'active' : ''} ${isTabDisabled(tab.key) ? 'disabled-tab' : ''}`}
-                  id={`${tab.key}-tab`}
-                  data-bs-toggle="tab"
-                  href={`#${tab.key}`}
-                  role="tab"
-                  aria-controls={tab.key}
-                  aria-selected={activeTab === tab.key}
-                  tabIndex={isTabDisabled(tab.key) ? -1 : 0}
-                  aria-disabled={isTabDisabled(tab.key)}
-                  onClick={e => {
-                    if (isTabDisabled(tab.key)) {
-                      e.preventDefault();
-                      return;
-                    }
-                    setActiveTab(tab.key);
-                  }}
-                  style={isTabDisabled(tab.key) ? { pointerEvents: 'none', opacity: 0.5 } : {}}
-                >
-                  {tab.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-          <div className="tab-content" id="myTabContent">
-            {renderContent()}
+    <div className="home-overlay">
+      <div className="container mt-3">
+        <div className="row">
+          <div className="col-md-12">
+            <Titulo
+              onSalir={() => {
+                document.cookie = 'token=; path=/; max-age=0;';
+                navigate('/login');
+              }}
+              usuario={currentUser?.name}
+            />
+            <ul className="nav nav-tabs" id="myTab" role="tablist">
+              {[
+                { key: 'personal', label: 'Personal Participante' },
+                { key: 'puestos', label: 'Puestos' },
+                { key: 'printer', label: 'Impresoras' },
+                { key: 'consumibles', label: 'Consumibles' },
+                { key: 'quotes', label: 'Cotizaciones' },
+                { key: 'calculator', label: 'Configuracion' },
+                { key: 'ventas', label: 'Ventas' }
+              ].map(tab => (
+                <li className="nav-item" key={tab.key}>
+                  <a
+                    className={`nav-link ${activeTab === tab.key ? 'active' : ''} ${isTabDisabled(tab.key) ? 'disabled-tab' : ''}`}
+                    id={`${tab.key}-tab`}
+                    data-bs-toggle="tab"
+                    href={`#${tab.key}`}
+                    role="tab"
+                    aria-controls={tab.key}
+                    aria-selected={activeTab === tab.key}
+                    tabIndex={isTabDisabled(tab.key) ? -1 : 0}
+                    aria-disabled={isTabDisabled(tab.key)}
+                    onClick={e => {
+                      if (isTabDisabled(tab.key)) {
+                        e.preventDefault();
+                        return;
+                      }
+                      setActiveTab(tab.key);
+                    }}
+                    style={isTabDisabled(tab.key) ? { pointerEvents: 'none', opacity: 0.5 } : {}}
+                  >
+                    {tab.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+            <div className="tab-content" id="myTabContent">
+              {renderContent()}
+            </div>
           </div>
         </div>
+        {showPrinterDetails && (
+          <PrinterDetails
+            showModal={showPrinterDetails}
+            handleClose={handleClosePrinterDetails}
+            selectedPrinterId={selectedPrinterId}
+          />
+        )}
+        {showConsumableDetails && (
+          <ConsumableDetails
+            showModal={showConsumableDetails}
+            handleClose={handleCloseConsumableDetails}
+            selectedConsumableId={selectedConsumableId}
+          />
+        )}
+        {showQuoteRequest && !selectedQuoteDetails && (
+          <QuoteRequest
+            showModal={showQuoteRequest}
+            handleClose={handleCloseQuoteRequest}
+          />
+        )}
+        {showQuoteRequest && selectedQuoteDetails && (
+          <QuoteView
+            showModal={showQuoteRequest}
+            handleClose={handleCloseQuoteRequest}
+            mode="edit"
+            quoteData={selectedQuoteDetails}
+          />
+        )}
+        {showCalculadoraAdd && (
+          <CalculadoraModal
+            showModal={showCalculadoraAdd}
+            handleClose={handleCloseCalculadoraAdd}
+            mode="add"
+          />
+        )}
+        {showCalculadoraEdit && selectedCalculatorDetails && (
+          <CalculadoraModal
+            showModal={showCalculadoraEdit}
+            handleClose={handleCloseCalculadoraEdit}
+            mode="edit"
+            calculatorData={selectedCalculatorDetails}
+          />
+        )}
+        <PrinterModal
+          showModal={showPrinterModal}
+          handleClose={() => setShowPrinterModal(false)}
+          mode={printerModalMode}
+          printerData={printerEditData}
+          onSaved={fetchPrinters}
+        />
+        <ConsumableModal
+          showModal={showConsumableModal}
+          handleClose={() => setShowConsumableModal(false)}
+          mode={consumableModalMode}
+          consumableData={consumableEditData}
+          onSaved={fetchConsumables}
+        />
+        <QuoteModal
+          showModal={showQuoteModal}
+          handleClose={() => setShowQuoteModal(false)}
+          mode={quoteModalMode}
+          quoteData={quoteEditData}
+          onSaved={fetchQuotes}
+        />
+        <CalculadoraConfigModal
+          showModal={showCalculadoraConfigModal}
+          handleClose={() => setShowCalculadoraConfigModal(false)}
+          mode={calculadoraConfigModalMode}
+          configData={calculadoraConfigEditData}
+          onSaved={fetchCalculatorConfigs}
+        />
+        <UserModal
+          showModal={showUserModal}
+          handleClose={() => setShowUserModal(false)}
+          userId={selectedUserId}
+          onUserUpdated={fetchUsuarios}
+          puestos={puestos}
+        />
+        <PuestoModal
+          showModal={showPuestoModal}
+          handleClose={() => setShowPuestoModal(false)}
+          mode={puestoModalMode}
+          puestoData={puestoEditData}
+          onSaved={fetchPuestos}
+        />
+        <Boorado
+          show={showBoorado}
+          onAccept={handleAcceptDelete}
+          onCancel={handleCancelDelete}
+        />
+        {showVentaView && ventaViewData && (
+          <VentaViewModal
+            show={showVentaView}
+            onHide={() => setShowVentaView(false)}
+            venta={ventaViewData}
+          />
+        )}
       </div>
-      {showPrinterDetails && (
-        <PrinterDetails
-          showModal={showPrinterDetails}
-          handleClose={handleClosePrinterDetails}
-          selectedPrinterId={selectedPrinterId}
-        />
-      )}
-      {showConsumableDetails && (
-        <ConsumableDetails
-          showModal={showConsumableDetails}
-          handleClose={handleCloseConsumableDetails}
-          selectedConsumableId={selectedConsumableId}
-        />
-      )}
-      {showQuoteRequest && !selectedQuoteDetails && (
-        <QuoteRequest
-          showModal={showQuoteRequest}
-          handleClose={handleCloseQuoteRequest}
-        />
-      )}
-      {showQuoteRequest && selectedQuoteDetails && (
-        <QuoteView
-          showModal={showQuoteRequest}
-          handleClose={handleCloseQuoteRequest}
-          mode="edit"
-          quoteData={selectedQuoteDetails}
-        />
-      )}
-      {showCalculadoraAdd && (
-        <CalculadoraModal
-          showModal={showCalculadoraAdd}
-          handleClose={handleCloseCalculadoraAdd}
-          mode="add"
-        />
-      )}
-      {showCalculadoraEdit && selectedCalculatorDetails && (
-        <CalculadoraModal
-          showModal={showCalculadoraEdit}
-          handleClose={handleCloseCalculadoraEdit}
-          mode="edit"
-          calculatorData={selectedCalculatorDetails}
-        />
-      )}
-      <PrinterModal
-        showModal={showPrinterModal}
-        handleClose={() => setShowPrinterModal(false)}
-        mode={printerModalMode}
-        printerData={printerEditData}
-        onSaved={fetchPrinters}
-      />
-      <ConsumableModal
-        showModal={showConsumableModal}
-        handleClose={() => setShowConsumableModal(false)}
-        mode={consumableModalMode}
-        consumableData={consumableEditData}
-        onSaved={fetchConsumables}
-      />
-      <QuoteModal
-        showModal={showQuoteModal}
-        handleClose={() => setShowQuoteModal(false)}
-        mode={quoteModalMode}
-        quoteData={quoteEditData}
-        onSaved={fetchQuotes}
-      />
-      <CalculadoraConfigModal
-        showModal={showCalculadoraConfigModal}
-        handleClose={() => setShowCalculadoraConfigModal(false)}
-        mode={calculadoraConfigModalMode}
-        configData={calculadoraConfigEditData}
-        onSaved={fetchCalculatorConfigs}
-      />
-      <UserModal
-        showModal={showUserModal}
-        handleClose={() => setShowUserModal(false)}
-        userId={selectedUserId}
-        onUserUpdated={fetchUsuarios}
-        puestos={puestos}
-      />
-      <PuestoModal
-        showModal={showPuestoModal}
-        handleClose={() => setShowPuestoModal(false)}
-        mode={puestoModalMode}
-        puestoData={puestoEditData}
-        onSaved={fetchPuestos}
-      />
-      <Boorado
-        show={showBoorado}
-        onAccept={handleAcceptDelete}
-        onCancel={handleCancelDelete}
-      />
-      {showVentaView && ventaViewData && (
-        <VentaViewModal
-          show={showVentaView}
-          onHide={() => setShowVentaView(false)}
-          venta={ventaViewData}
-        />
-      )}
     </div>
   );
 };

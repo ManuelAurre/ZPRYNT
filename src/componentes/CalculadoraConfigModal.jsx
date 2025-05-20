@@ -19,6 +19,7 @@ const CalculadoraConfigModal = ({
     responsablePostprocesado: '',
     responsableMarketing: '',
   });
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     const fetchUtilizables = async () => {
@@ -67,6 +68,11 @@ const CalculadoraConfigModal = ({
     }
   }, [mode, configData, showModal]);
 
+  useEffect(() => {
+    if (showModal) setVisible(true);
+    else if (visible) setTimeout(() => setVisible(false), 250);
+  }, [showModal]);
+
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
@@ -113,11 +119,11 @@ const CalculadoraConfigModal = ({
     handleClose();
   };
 
-  if (!showModal) return null;
+  if (!showModal && !visible) return null;
 
   return (
     <div className="boorado-modal-backdrop">
-      <div className="boorado-modal">
+      <div className={`boorado-modal ${showModal ? 'fade-in' : 'fade-out'}`}>
         <div className="boorado-modal-header">
           <h4 className="boorado-modal-header-left" style={{ margin: 0 }}>
             {mode === 'add' ? 'Agregar Configuración' : 'Editar Configuración'}

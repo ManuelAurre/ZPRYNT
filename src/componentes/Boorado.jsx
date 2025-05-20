@@ -1,11 +1,18 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import '../styles/componentes.css';
 
 const Boorado = ({ show, onAccept, onCancel }) => {
-  if (!show) return null;
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (show) setVisible(true);
+    else if (visible) setTimeout(() => setVisible(false), 250);
+  }, [show]);
+
+  if (!show && !visible) return null;
   return (
     <div className="boorado-modal-backdrop">
-      <div className="boorado-modal">
+      <div className={`boorado-modal ${show ? 'fade-in' : 'fade-out'}`}>
         <div className="boorado-modal-header">
           <span className="boorado-modal-header-left">Confirmar borrado: </span>
           <button className="boorado-modal-close" onClick={onCancel} aria-label="Cerrar">&times;</button>

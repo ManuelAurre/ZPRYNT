@@ -23,7 +23,7 @@ export default function useHomeLogic(navigate) {
   const [showConsumableModal, setShowConsumableModal] = useState(false);
   const [consumableModalMode, setConsumableModalMode] = useState('add');
   const [consumableEditData, setConsumableEditData] = useState(null);
-  const [activeTab, setActiveTab] = useState('printer');
+  const [activeTab, setActiveTab] = useState('ventas');
   const [showCalculadoraAdd, setShowCalculadoraAdd] = useState(false);
   const [showCalculadoraEdit, setShowCalculadoraEdit] = useState(false);
   const [selectedQuote, setSelectedQuote] = useState(null);

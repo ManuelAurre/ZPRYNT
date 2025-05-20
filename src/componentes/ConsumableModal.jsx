@@ -13,6 +13,7 @@ const ConsumableModal = ({ showModal, handleClose, mode = 'add', consumableData,
   });
   const [imagenFile, setImagenFile] = useState(null);
   const [imagenPreview, setImagenPreview] = useState('');
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     if (mode === 'edit' && consumableData) {
@@ -37,6 +38,11 @@ const ConsumableModal = ({ showModal, handleClose, mode = 'add', consumableData,
       setImagenFile(null);
     }
   }, [mode, consumableData, showModal]);
+
+  useEffect(() => {
+    if (showModal) setVisible(true);
+    else if (visible) setTimeout(() => setVisible(false), 250);
+  }, [showModal]);
 
   const handleChange = e => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -85,11 +91,11 @@ const ConsumableModal = ({ showModal, handleClose, mode = 'add', consumableData,
     handleClose();
   };
 
-  if (!showModal) return null;
+  if (!showModal && !visible) return null;
 
   return (
     <div className="boorado-modal-backdrop">
-      <div className="boorado-modal">
+      <div className={`boorado-modal ${showModal ? 'fade-in' : 'fade-out'}`}>
         <div className="boorado-modal-header">
           <h4 className="boorado-modal-header-left" style={{ margin: 0 }}>
             {mode === 'add' ? 'Agregar Consumible' : 'Editar Consumible'}

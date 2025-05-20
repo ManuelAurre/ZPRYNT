@@ -12,6 +12,7 @@ const PrinterModal = ({ showModal, handleClose, mode = 'add', printerData, onSav
   });
   const [imagenFile, setImagenFile] = useState(null);
   const [imagenPreview, setImagenPreview] = useState('');
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     if (mode === 'edit' && printerData) {
@@ -35,6 +36,11 @@ const PrinterModal = ({ showModal, handleClose, mode = 'add', printerData, onSav
       setImagenFile(null);
     }
   }, [mode, printerData, showModal]);
+
+  useEffect(() => {
+    if (showModal) setVisible(true);
+    else if (visible) setTimeout(() => setVisible(false), 250);
+  }, [showModal]);
 
   const handleChange = e => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -81,11 +87,11 @@ const PrinterModal = ({ showModal, handleClose, mode = 'add', printerData, onSav
     handleClose();
   };
 
-  if (!showModal) return null;
+  if (!showModal && !visible) return null;
 
   return (
     <div className="boorado-modal-backdrop">
-      <div className="boorado-modal">
+      <div className={`boorado-modal ${showModal ? 'fade-in' : 'fade-out'}`}>
         <div className="boorado-modal-header">
           <h4 className="boorado-modal-header-left" style={{ margin: 0 }}>
             {mode === 'add' ? 'Agregar Impresora' : 'Editar Impresora'}

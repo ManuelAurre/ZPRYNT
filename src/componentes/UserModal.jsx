@@ -6,6 +6,12 @@ const UserModal = ({ showModal, handleClose, userId, onUserUpdated, puestos }) =
   const [userData, setUserData] = useState(null);
   const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '', tipo: '', edad: '' });
   const [passwordError, setPasswordError] = useState('');
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (showModal) setVisible(true);
+    else if (visible) setTimeout(() => setVisible(false), 250);
+  }, [showModal]);
 
   useEffect(() => {
     if (showModal && userId) {
@@ -48,11 +54,11 @@ const UserModal = ({ showModal, handleClose, userId, onUserUpdated, puestos }) =
     handleClose();
   };
 
-  if (!showModal) return null;
+  if (!showModal && !visible) return null;
 
   return (
     <div className="boorado-modal-backdrop">
-      <div className="boorado-modal">
+      <div className={`boorado-modal ${showModal ? 'fade-in' : 'fade-out'}`}>
         <div className="boorado-modal-header">
           <h4 className="boorado-modal-header-left" style={{ margin: 0 }}>Editar Usuario</h4>
           <button

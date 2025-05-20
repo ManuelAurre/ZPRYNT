@@ -48,7 +48,7 @@
 .btn-login-primary {
   background-color: #43d835;
   border: none;
-  color: #fff;
+  color: #000000;
   padding: 8px 22px;
   border-radius: 5px;
   font-size: 1rem;
@@ -155,4 +155,74 @@
 .btn-register-link:hover {
   color: #b39ddb;
   text-decoration: underline;
+}
+
+.login-background {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.login-background::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url('../Img/fondo.jpg') center center/cover no-repeat;
+  filter: blur(10px) brightness(0.7);
+  z-index: 1;
+  animation: fondoAnimado 12s ease-in-out infinite alternate;
+}
+
+@keyframes fondoAnimado {
+  0% { transform: scale(1.08) translateY(0px);}
+  100% { transform: scale(1.13) translateY(-20px);}
+}
+
+.login-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  min-height: 100vh;
+}
+
+.login-form-container {
+  margin-left: 7vw;
+  margin-top: 18vh;
+  background: #5427E2;
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  padding: 2.5rem 2.5rem 2rem 2.5rem;
+  min-width: 400px;
+  max-width: 480px;
+  z-index: 3;
+  animation: aparecerForm 1.2s cubic-bezier(.68,-0.55,.27,1.55);
+}
+
+@keyframes aparecerForm {
+  0% { opacity: 0; transform: translateY(40px) scale(0.95);}
+  100% { opacity: 1; transform: translateY(0) scale(1);}
+}
+
+/* Labels y campos en blanco */
+.login-form-container label,
+.login-form-container .form-group label {
+  color: #fff !important;
+}
+
+.login-form-container input,
+.login-form-container .form-control {
+  color: #000; /* Texto interno negro */
+  background: #fff;
+  border: 1px solid #000;
+}
+
+.login-form-container input::placeholder {
+  color: #fff;
+  opacity: 0.8;
 }
