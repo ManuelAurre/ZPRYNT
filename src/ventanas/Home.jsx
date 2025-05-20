@@ -46,6 +46,7 @@ const Home = () => {
     calculatorConfigsWithNames, handleShowCalculadoraConfigModal, handleEditCalculadoraConfig,
     columnasTablas, columnasPuestos, columnasVentas, columnasUsuarios,
     renderLinkCell, renderCalculadoraCell, renderUsuarioCell,
+    currentUser,
   } = logic;
 
   const renderContent = () => {
@@ -199,6 +200,7 @@ const Home = () => {
               document.cookie = 'token=; path=/; max-age=0;';
               navigate('/login');
             }}
+            usuario={currentUser?.name}
           />
           <ul className="nav nav-tabs" id="myTab" role="tablist">
             {[

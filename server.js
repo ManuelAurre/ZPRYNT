@@ -4,9 +4,11 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
 const multer = require('multer');
+const jwt = require('jsonwebtoken');
 
 const app = express();
 const prisma = new PrismaClient();
+const JWT_SECRET = process.env.JWT_SECRET || 'supersecreto';
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -16,6 +18,20 @@ app.use('/img', express.static(path.join(__dirname, 'src', 'Img')));
 
 // Configuración de multer para guardar imágenes en memoria
 const upload = multer(); // No uses diskStorage, solo memoria
+
+// Middleware para autenticar el token JWT
+function authMiddleware(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) return res.status(401).json({ error: 'No token provided' });
+  const token = authHeader.split(' ')[1];
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.userId = decoded.id;
+    next();
+  } catch (err) {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+}
 
 app.post('/register', async (req, res) => {
   const { name, email, password, tipo, edad } = req.body;
@@ -35,15 +51,18 @@ app.post('/register', async (req, res) => {
   }
 });
 
-app.post('/login', async (req, res) => {
+// Cambia el endpoint de login para devolver un token JWT
+app.post('/api/auth/login', async (req, res) => {
   const { email, password } = req.body;
   try {
     const user = await prisma.user.findUnique({
       where: { email }
     });
     if (user && user.password === password) {
-      // Devuelve el usuario completo, incluyendo el id de puesto/tipo
+      // Crea el token con el id del usuario
+      const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '7d' });
       res.status(200).json({
+        token,
         id: user.id,
         name: user.name,
         email: user.email,
@@ -58,13 +77,12 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// Endpoint para obtener el usuario actual (para Home.jsx)
-app.get('/api/users/me', async (req, res) => {
-  // Aquí deberías obtener el usuario a partir del token, pero para pruebas:
-  // Por ejemplo, si usas sesiones o JWT, aquí deberías decodificar el token.
-  // Por ahora, simula con el primer usuario:
+// Modifica /api/users/me para devolver el usuario autenticado
+app.get('/api/users/me', authMiddleware, async (req, res) => {
   try {
-    const user = await prisma.user.findFirst();
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId }
+    });
     if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
     res.json({
       id: user.id,

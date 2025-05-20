@@ -78,6 +78,7 @@ export default function useHomeLogic(navigate) {
   useEffect(() => {
     if (puestos.length === 0) return;
     const token = getTokenFromCookie();
+    console.log('Token en cookie:', token); // <-- Log del token
     if (!token) {
       navigate('/login');
     } else {
@@ -86,6 +87,7 @@ export default function useHomeLogic(navigate) {
       })
         .then(res => res.ok ? res.json() : null)
         .then(data => {
+          console.log('Usuario recibido de /api/users/me:', data); // <-- Log de la respuesta
           setCurrentUser(data);
           setCurrentPuesto(data?.tipo || null);
         })
@@ -115,12 +117,12 @@ export default function useHomeLogic(navigate) {
         personal: true, puestos: true, printer: true, consumibles: true, quotes: true, calculator: true, ventas: true
       };
     }
-    if (String(puestoId) === '3') {
+    if (String(puestoId) === '5') {
       return {
         personal: false, puestos: false, printer: false, consumibles: false, quotes: false, calculator: false, ventas: false
       };
     }
-    if (['1', '2', '5'].includes(String(puestoId))) {
+    if (['1', '2', '3'].includes(String(puestoId))) {
       return {
         personal: false, puestos: false, printer: false, consumibles: false, quotes: true, calculator: false, ventas: true
       };

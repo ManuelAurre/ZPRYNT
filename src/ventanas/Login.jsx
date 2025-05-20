@@ -16,33 +16,21 @@ const Login = () => {
     });
   };
 
-  const handleSubmit = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:4000/login', {
+      const response = await fetch('/api/auth/login', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(formData)
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
       });
       if (response.ok) {
-        let data;
-        const contentType = response.headers.get('content-type');
-        if (contentType && contentType.includes('application/json')) {
-          data = await response.json();
-          document.cookie = `token=${data.token}; path=/; max-age=86400;`;
+        const data = await response.json();
+        if (data.token) {
+          document.cookie = `token=${data.token}; path=/;`;
           navigate('/home');
         } else {
-          // Si el backend responde con el token como texto plano
-          data = await response.text();
-          // Si el texto parece un token, lo guardamos
-          if (data && data.length > 10) { // Ajusta la condición según tu token
-            document.cookie = `token=${data}; path=/; max-age=86400;`;
-            navigate('/home');
-          } else {
-            alert('Respuesta inesperada del servidor. Contacta al administrador.');
-          }
+          console.error('No se recibió token del backend');
         }
       } else {
         console.error('Invalid credentials');
@@ -59,7 +47,7 @@ const Login = () => {
         <span className="login-zprynt-text">ZPRYNT</span>
       </div>
       <h3>Inicio de Sesión</h3>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleLogin}>
         <div className="form-group">
           <label htmlFor="loginEmail">Correo Electrónico</label>
           <input type="email" className="form-control" id="loginEmail" name="email" placeholder="Ingresa tu correo electrónico" required onChange={handleChange} />
