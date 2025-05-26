@@ -198,6 +198,7 @@ app.put('/api/calculadoras/:id', async (req, res) => {
 
 // Ruta para eliminar una configuración de calculadora
 app.delete('/api/calculadoras/:id', async (req, res) => {
+  console.log('DELETE /api/calculadoras/:id', req.params.id); // <-- Agrega este log
   const { id } = req.params;
   try {
     const configuracion = await prisma.configuracionCalculadora.delete({
@@ -306,6 +307,7 @@ app.put('/api/impresoras/:id', upload.single('imagen'), async (req, res) => {
 
 // Ruta para eliminar una impresora
 app.delete('/api/impresoras/:id', async (req, res) => {
+  console.log('DELETE /api/impresoras/:id', req.params.id); // <-- Agrega este log
   const { id } = req.params;
   try {
     const impresora = await prisma.impresora.delete({
@@ -434,6 +436,7 @@ app.put('/api/utilizables/:id', upload.single('imagen'), async (req, res) => {
 
 // Ruta para eliminar un consumible
 app.delete('/api/utilizables/:id', async (req, res) => {
+  console.log('DELETE /api/utilizables/:id', req.params.id); // <-- Agrega este log
   const { id } = req.params;
   try {
     const consumible = await prisma.utilizables.delete({
@@ -550,6 +553,7 @@ app.put('/api/cotizaciones/:id', async (req, res) => {
 
 // Ruta para eliminar una cotización
 app.delete('/api/cotizaciones/:id', async (req, res) => {
+  console.log('DELETE /api/cotizaciones/:id', req.params.id); // <-- Agrega este log
   const { id } = req.params;
   try {
     const cotizacion = await prisma.cotizacion.delete({
@@ -730,6 +734,20 @@ app.put('/api/users/:id', async (req, res) => {
   }
 });
 
+// Ruta para eliminar un usuario
+app.delete('/api/users/:id', async (req, res) => {
+  console.log('DELETE /api/users/:id', req.params.id); // <-- Agrega este log
+  const { id } = req.params;
+  try {
+    const user = await prisma.user.delete({
+      where: { id: parseInt(id, 10) },
+    });
+    res.json({ message: 'Usuario eliminado exitosamente.', user });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al eliminar el usuario' });
+  }
+});
+
 // Rutas para Puestos
 app.get('/api/puestos', async (req, res) => {
   try {
@@ -807,6 +825,7 @@ app.put('/api/puestos/:id', async (req, res) => {
 });
 
 app.delete('/api/puestos/:id', async (req, res) => {
+  console.log('DELETE /api/puestos/:id', req.params.id); // <-- Agrega este log
   const { id } = req.params;
   try {
     const puesto = await prisma.puesto.delete({
@@ -815,6 +834,33 @@ app.delete('/api/puestos/:id', async (req, res) => {
     res.json({ message: 'Puesto eliminado exitosamente.', puesto });
   } catch (error) {
     res.status(500).json({ error: 'Error al eliminar el puesto' });
+  }
+});
+
+// Ruta genérica para eliminar registros de cualquier tabla soportada
+app.delete('/api/:tabla/:id', async (req, res) => {
+  const { tabla, id } = req.params;
+  const tablasPermitidas = {
+    users: 'user',
+    impresoras: 'impresora',
+    utilizables: 'utilizables',
+    puestos: 'puesto',
+    cotizaciones: 'cotizacion',
+    calculadoras: 'configuracionCalculadora',
+    ventas: 'ventas'
+  };
+  const modelo = tablasPermitidas[tabla];
+  if (!modelo) {
+    return res.status(400).json({ error: 'Tabla no permitida' });
+  }
+  try {
+    const deleted = await prisma[modelo].delete({
+      where: { id: parseInt(id, 10) }
+    });
+    res.json({ message: `Registro eliminado exitosamente de ${tabla}.`, deleted });
+  } catch (error) {
+    console.error(`Error al eliminar en ${tabla}:`, error);
+    res.status(500).json({ error: `Error al eliminar en ${tabla}.` });
   }
 });
 
